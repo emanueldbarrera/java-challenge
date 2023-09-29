@@ -29,7 +29,7 @@ public class EmployeeServiceImpl implements EmployeeService{
     }
 
     public void saveEmployee(Employee employee){
-        employeeRepository.save(employee);
+        employeeRepository.saveAndFlush(employee);
     }
 
     public void deleteEmployee(Long employeeId){

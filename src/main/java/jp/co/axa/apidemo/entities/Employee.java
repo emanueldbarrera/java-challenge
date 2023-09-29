@@ -1,6 +1,8 @@
 package jp.co.axa.apidemo.entities;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.Column;
@@ -12,6 +14,7 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name="EMPLOYEE")
+@NoArgsConstructor
 public class Employee {
 
     @Getter
@@ -23,16 +26,19 @@ public class Employee {
     @Getter
     @Setter
     @Column(name="EMPLOYEE_NAME")
+    @JsonProperty("name")
     private String name;
 
     @Getter
     @Setter
     @Column(name="EMPLOYEE_SALARY")
+    @JsonProperty("salary")
     private Integer salary;
 
     @Getter
     @Setter
     @Column(name="DEPARTMENT")
+    @JsonProperty("department")
     private String department;
 
 }
