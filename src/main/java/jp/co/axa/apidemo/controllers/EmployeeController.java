@@ -46,6 +46,7 @@ public class EmployeeController {
                                @PathVariable(name="employeeId")Long employeeId){
         Employee emp = employeeService.getEmployee(employeeId);
         if(emp != null){
+            employee.setId(employeeId);
             employeeService.updateEmployee(employee);
         }
 

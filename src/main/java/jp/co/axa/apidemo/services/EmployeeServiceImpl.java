@@ -37,6 +37,6 @@ public class EmployeeServiceImpl implements EmployeeService{
     }
 
     public void updateEmployee(Employee employee) {
-        employeeRepository.save(employee);
+        employeeRepository.saveAndFlush(employee);
     }
 }
