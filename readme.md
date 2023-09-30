@@ -5,14 +5,17 @@
 - First, I did a manual test of the api, using the Swagger tool
 - Fixed some bugs I found during manual testing
 - Added unit tests with junit5, so that I could code using TDD
+
+- Added DTO objects for request and responses
+- Added parameters validations
 - Added custom exceptions
+
 - Included sonarqube for code analysis
 - Included a code coverage plugin for reports (jacoco)
 - Used a logging library (log4j2)
 
 #### What I would like to improve
 
-- Add DTO objects for request and responses
 - Add Spring Security
 - Improve javadoc and comments
 - Add integration tests
@@ -21,7 +24,7 @@
 - Include versioning
 - Include support for environments
 - Add pagination
-- Add parameters validations
+- Parameterize Departments
 
 #### My experience in Java
 

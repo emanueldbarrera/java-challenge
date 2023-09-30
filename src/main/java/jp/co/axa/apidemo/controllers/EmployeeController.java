@@ -3,12 +3,16 @@ package jp.co.axa.apidemo.controllers;
 import jp.co.axa.apidemo.common.ApiBusinessException;
 import jp.co.axa.apidemo.common.ErrorCode;
 import jp.co.axa.apidemo.entities.Employee;
+import jp.co.axa.apidemo.models.ApiV1EmployeesGetEmployeeRequest;
+import jp.co.axa.apidemo.models.ApiV1EmployeesGetEmployeeResponse;
 import jp.co.axa.apidemo.services.EmployeeService;
+import jp.co.axa.apidemo.util.ApiV1EmployeesGetEmployeeResponseUtil;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.ConstraintViolationException;
 import java.util.List;
 
 @Log4j2
@@ -26,18 +30,24 @@ public class EmployeeController {
     }
 
     @GetMapping("/employees/{employeeId}")
-    public Employee getEmployee(@PathVariable(name = "employeeId") Long employeeId) {
-        Employee employee = null;
+    public ApiV1EmployeesGetEmployeeResponse getEmployee(@PathVariable(name = "employeeId") Long employeeId) {
         try {
-            return employeeService.getEmployee(employeeId);
+            ApiV1EmployeesGetEmployeeRequest request = ApiV1EmployeesGetEmployeeRequest.builder().employeeId(employeeId).build();
+            request.validate();
+            final Employee employee = employeeService.getEmployee(employeeId);
+            return ApiV1EmployeesGetEmployeeResponseUtil.buildResponseSuccess(employee);
+        } catch (ConstraintViolationException e) {
+            log.info("Validation error: " + e.getMessage());
+            return ApiV1EmployeesGetEmployeeResponseUtil.buildResponseFailure(ErrorCode.INVALID_REQUEST_PARAMETER,"Invalid request parameter");
         } catch (ApiBusinessException e) {
             if (e.getErrorCode().equals(ErrorCode.NOT_FOUND)) {
-                log.info("Employee Not Found");
+                log.info("Employee not found; id: " + employeeId);
+                return ApiV1EmployeesGetEmployeeResponseUtil.buildResponseFailure(e.getErrorCode(),"Employee not found");
             } else {
                 log.info("System error");
+                return ApiV1EmployeesGetEmployeeResponseUtil.buildResponseFailure(e.getErrorCode(),"System error");
             }
         }
-        return employee;
     }
 
     @PostMapping("/employees")
