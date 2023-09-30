@@ -4,10 +4,10 @@
 
 - First, I did a manual test of the api, using the Swagger tool
 - Fixed some bugs I found during manual testing
+- Added custom exceptions
 
 #### What I would like to improve
 
-- Add custom exceptions
 - Add unit tests with junit5, so that I could code using TDD
 - Add DTO objects for request and responsses
 - Add Spring Security
