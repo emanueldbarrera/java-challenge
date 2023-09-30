@@ -3,6 +3,8 @@ package jp.co.axa.apidemo.services;
 import jp.co.axa.apidemo.common.ApiBusinessException;
 import jp.co.axa.apidemo.common.ErrorCode;
 import jp.co.axa.apidemo.entities.Employee;
+import jp.co.axa.apidemo.models.ApiV1EmployeesDeleteEmployeeRequest;
+import jp.co.axa.apidemo.models.ApiV1EmployeesGetEmployeeRequest;
 import jp.co.axa.apidemo.models.ApiV1EmployeesSaveEmployeeRequest;
 import jp.co.axa.apidemo.repositories.EmployeeRepository;
 import lombok.AllArgsConstructor;
@@ -23,7 +25,8 @@ public class EmployeeServiceImpl implements EmployeeService {
         return employeeRepository.findAll();
     }
 
-    public Employee getEmployee(Long employeeId) throws ApiBusinessException {
+    public Employee getEmployee(ApiV1EmployeesGetEmployeeRequest request) throws ApiBusinessException {
+        final Long employeeId = request.getEmployeeId();
         Optional<Employee> optionalEmployee = employeeRepository.findById(employeeId);
         if (!optionalEmployee.isPresent()) {
             throw new ApiBusinessException("0-0-1", ErrorCode.NOT_FOUND, "Employee not found");
@@ -44,8 +47,20 @@ public class EmployeeServiceImpl implements EmployeeService {
         }
     }
 
-    public void deleteEmployee(Long employeeId) {
-        employeeRepository.deleteById(employeeId);
+    public Employee deleteEmployee(ApiV1EmployeesDeleteEmployeeRequest request) throws ApiBusinessException {
+        // Get employee from database
+        final Long employeeId = request.getEmployeeId();
+        Optional<Employee> optionalEmployee = employeeRepository.findById(employeeId);
+        if (!optionalEmployee.isPresent()) {
+            throw new ApiBusinessException("0-0-3", ErrorCode.NOT_FOUND, "Employee not found");
+        }
+        // Delete employee and return a copy
+        try {
+            employeeRepository.deleteById(employeeId);
+        } catch (Exception e) {
+            throw new ApiBusinessException("0-0-4", ErrorCode.SYSTEM_ERROR, "Database error");
+        }
+        return optionalEmployee.get();
     }
 
     public void updateEmployee(Employee employee) {

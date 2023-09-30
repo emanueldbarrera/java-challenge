@@ -5,6 +5,7 @@ import jp.co.axa.apidemo.common.ErrorCode;
 import jp.co.axa.apidemo.entities.Employee;
 import jp.co.axa.apidemo.models.*;
 import jp.co.axa.apidemo.services.EmployeeService;
+import jp.co.axa.apidemo.util.ApiV1EmployeesDeleteEmployeeResponseUtil;
 import jp.co.axa.apidemo.util.ApiV1EmployeesGetEmployeeResponseUtil;
 import jp.co.axa.apidemo.util.ApiV1EmployeesGetEmployeesResponseUtil;
 import jp.co.axa.apidemo.util.ApiV1EmployeesSaveEmployeeResponseUtil;
@@ -39,7 +40,7 @@ public class EmployeeController {
         try {
             ApiV1EmployeesGetEmployeeRequest request = ApiV1EmployeesGetEmployeeRequest.builder().employeeId(employeeId).build();
             request.validate();
-            final Employee employee = employeeService.getEmployee(employeeId);
+            final Employee employee = employeeService.getEmployee(request);
             return ApiV1EmployeesGetEmployeeResponseUtil.buildResponseSuccess(employee);
         } catch (ConstraintViolationException e) {
             log.info("Validation error: " + e.getMessage());
@@ -78,16 +79,41 @@ public class EmployeeController {
     }
 
     @DeleteMapping("/employees/{employeeId}")
-    public void deleteEmployee(@PathVariable(name = "employeeId") Long employeeId) {
-        employeeService.deleteEmployee(employeeId);
-        log.info("Employee Deleted Successfully");
+    public ApiV1EmployeesDeleteEmployeeResponse deleteEmployee(@PathVariable(name = "employeeId") Long employeeId) {
+        try {
+            ApiV1EmployeesDeleteEmployeeRequest request = ApiV1EmployeesDeleteEmployeeRequest.builder()
+                    .employeeId(employeeId)
+                    .build();
+            request.validate();
+            final Employee employee = employeeService.deleteEmployee(request);
+            log.info("Employee Deleted Successfully; employeeId: " + employeeId);
+            return ApiV1EmployeesDeleteEmployeeResponseUtil.buildResponseSuccess(employee);
+        } catch (ConstraintViolationException e) {
+            log.info("Validation error: " + e.getMessage());
+            return ApiV1EmployeesDeleteEmployeeResponseUtil.buildResponseFailure(ErrorCode.INVALID_REQUEST_PARAMETER, "Invalid request parameter");
+        } catch (ApiBusinessException e) {
+            if (e.getErrorCode().equals(ErrorCode.NOT_FOUND)) {
+                log.info("Employee not found; id: " + employeeId);
+                return ApiV1EmployeesDeleteEmployeeResponseUtil.buildResponseFailure(e.getErrorCode(), "Employee not found");
+            } else {
+                log.warn("System error", e.getMessage());
+                return ApiV1EmployeesDeleteEmployeeResponseUtil.buildResponseFailure(ErrorCode.SYSTEM_ERROR, "System error");
+            }
+        } catch (Exception e) {
+            log.warn("Unknown exception: " + e.getMessage());
+            return ApiV1EmployeesDeleteEmployeeResponseUtil.buildResponseFailure(ErrorCode.UNKNOWN, "Unknown error");
+        }
     }
 
     @PutMapping("/employees/{employeeId}")
     public void updateEmployee(@RequestBody Employee employee,
                                @PathVariable(name = "employeeId") Long employeeId) {
         try {
-            Employee emp = employeeService.getEmployee(employeeId);
+            final ApiV1EmployeesGetEmployeeRequest request = ApiV1EmployeesGetEmployeeRequest.builder()
+                    .employeeId(employeeId)
+                    .build();
+            request.validate();
+            final Employee emp = employeeService.getEmployee(request);
             if (emp != null) {
                 employee.setId(employeeId);
                 employeeService.updateEmployee(employee);

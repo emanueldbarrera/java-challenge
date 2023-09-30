@@ -5,10 +5,13 @@ import jp.co.axa.apidemo.common.ResultType;
 import jp.co.axa.apidemo.entities.Employee;
 import jp.co.axa.apidemo.models.ApiV1EmployeeEntity;
 import jp.co.axa.apidemo.models.ApiV1EmployeesGetEmployeesResponse;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ApiV1EmployeesGetEmployeesResponseUtil {
     public static ApiV1EmployeesGetEmployeesResponse buildResponseSuccess(final List<Employee> employees) {
         final List<ApiV1EmployeeEntity> employeesResponses = new ArrayList<>();

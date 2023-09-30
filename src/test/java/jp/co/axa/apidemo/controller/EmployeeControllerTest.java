@@ -5,10 +5,7 @@ import jp.co.axa.apidemo.common.ErrorCode;
 import jp.co.axa.apidemo.common.ResultType;
 import jp.co.axa.apidemo.controllers.EmployeeController;
 import jp.co.axa.apidemo.entities.Employee;
-import jp.co.axa.apidemo.models.ApiV1EmployeesGetEmployeeResponse;
-import jp.co.axa.apidemo.models.ApiV1EmployeesGetEmployeesResponse;
-import jp.co.axa.apidemo.models.ApiV1EmployeesSaveEmployeeRequest;
-import jp.co.axa.apidemo.models.ApiV1EmployeesSaveEmployeeResponse;
+import jp.co.axa.apidemo.models.*;
 import jp.co.axa.apidemo.services.EmployeeService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,8 +15,7 @@ import org.mockito.Mock;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -36,37 +32,35 @@ class EmployeeControllerTest {
     @InjectMocks
     private EmployeeController employeeController;
 
+    private Employee employee1;
+    private Employee employee2;
+
     @BeforeEach
     void init() throws ApiBusinessException {
         initMocks(this);
 
         // Set test Employee entities
-        final Employee employee1 = new Employee();
+        employee1 = new Employee();
         employee1.setId(1L);
         employee1.setName("Some Name");
         employee1.setDepartment("Some Department");
         employee1.setSalary(3000);
 
-        final Employee employee2 = new Employee();
+        employee2 = new Employee();
         employee2.setId(2L);
         employee2.setName("Other Name");
         employee2.setDepartment("Other Department");
         employee2.setSalary(4500);
 
-        List<Employee> employees = new java.util.ArrayList<>();
+        final List<Employee> employees = new java.util.ArrayList<>();
         employees.add(employee1);
         employees.add(employee2);
         when(employeeService.getEmployees()).thenReturn(employees);
 
-        when(employeeService.getEmployee(any(Long.class)))
-                .thenThrow(new ApiBusinessException("anyPlaceCode", ErrorCode.NOT_FOUND, "anyMessage"));
-        doReturn(employee1).when(employeeService).getEmployee(1L);
-        doReturn(employee2).when(employeeService).getEmployee(2L);
-
         when(employeeService.saveEmployee(any(ApiV1EmployeesSaveEmployeeRequest.class)))
                 .thenReturn(employee1);
-
-        employeeController = new EmployeeController(employeeService);
+        when(employeeService.deleteEmployee((any(ApiV1EmployeesDeleteEmployeeRequest.class))))
+                .thenReturn(employee1);
     }
 
     /**
@@ -74,18 +68,18 @@ class EmployeeControllerTest {
      */
     @Test
     void test_getEmployees_success() {
-        final ApiV1EmployeesGetEmployeesResponse employeesResponse = employeeController.getEmployees();
+        final ApiV1EmployeesGetEmployeesResponse response = employeeController.getEmployees();
 
-        assertThat(employeesResponse.getResultType(), is(ResultType.SUCCESS.getCode()));
-        assertThat(employeesResponse.getEmployees().size(), is(2));
-        assertThat(employeesResponse.getEmployees().get(0).getEmployeeId(), is(1L));
-        assertThat(employeesResponse.getEmployees().get(0).getName(), is("Some Name"));
-        assertThat(employeesResponse.getEmployees().get(0).getDepartment(), is("Some Department"));
-        assertThat(employeesResponse.getEmployees().get(0).getSalary(), is(3000));
-        assertThat(employeesResponse.getEmployees().get(1).getEmployeeId(), is(2L));
-        assertThat(employeesResponse.getEmployees().get(1).getName(), is("Other Name"));
-        assertThat(employeesResponse.getEmployees().get(1).getDepartment(), is("Other Department"));
-        assertThat(employeesResponse.getEmployees().get(1).getSalary(), is(4500));
+        assertThat(response.getResultType(), is(ResultType.SUCCESS.getCode()));
+        assertThat(response.getEmployees().size(), is(2));
+        assertThat(response.getEmployees().get(0).getEmployeeId(), is(1L));
+        assertThat(response.getEmployees().get(0).getName(), is("Some Name"));
+        assertThat(response.getEmployees().get(0).getDepartment(), is("Some Department"));
+        assertThat(response.getEmployees().get(0).getSalary(), is(3000));
+        assertThat(response.getEmployees().get(1).getEmployeeId(), is(2L));
+        assertThat(response.getEmployees().get(1).getName(), is("Other Name"));
+        assertThat(response.getEmployees().get(1).getDepartment(), is("Other Department"));
+        assertThat(response.getEmployees().get(1).getSalary(), is(4500));
     }
 
     /**
@@ -95,10 +89,10 @@ class EmployeeControllerTest {
     void test_getEmployees_success_empty_db() {
         when(employeeService.getEmployees()).thenReturn(new ArrayList<>());
 
-        final ApiV1EmployeesGetEmployeesResponse employeesResponse = employeeController.getEmployees();
+        final ApiV1EmployeesGetEmployeesResponse response = employeeController.getEmployees();
 
-        assertThat(employeesResponse.getResultType(), is(ResultType.SUCCESS.getCode()));
-        assertThat(employeesResponse.getEmployees().size(), is(0));
+        assertThat(response.getResultType(), is(ResultType.SUCCESS.getCode()));
+        assertThat(response.getEmployees().size(), is(0));
     }
 
     /**
@@ -108,27 +102,30 @@ class EmployeeControllerTest {
     void test_getEmployees_success_RuntimeException() {
         doThrow(RuntimeException.class).when(employeeService).getEmployees();
 
-        final ApiV1EmployeesGetEmployeesResponse employeesResponse = employeeController.getEmployees();
+        final ApiV1EmployeesGetEmployeesResponse response = employeeController.getEmployees();
 
-        assertThat(employeesResponse.getResultType(), is(ResultType.FAILURE.getCode()));
-        assertThat(employeesResponse.getErrorCode(), is(ErrorCode.UNKNOWN.getCode()));
-        assertThat(employeesResponse.getErrorMessage(), is("Unknown error"));
-        assertThat(employeesResponse.getEmployees(), is(nullValue()));
+        assertThat(response.getResultType(), is(ResultType.FAILURE.getCode()));
+        assertThat(response.getErrorCode(), is(ErrorCode.UNKNOWN.getCode()));
+        assertThat(response.getErrorMessage(), is("Unknown error"));
+        assertThat(response.getEmployees(), is(nullValue()));
     }
 
     /**
      * getEmployee - Success case
      */
     @Test
-    void test_getEmployee_success() {
-        final ApiV1EmployeesGetEmployeeResponse employeeResponse = employeeController.getEmployee(1L);
-        assertThat(employeeResponse.getResultType(), is(ResultType.SUCCESS.getCode()));
-        assertThat(employeeResponse.getErrorCode(), is(nullValue()));
-        assertThat(employeeResponse.getErrorMessage(), is(nullValue()));
-        assertThat(employeeResponse.getEmployeeId(), is(1L));
-        assertThat(employeeResponse.getName(), is("Some Name"));
-        assertThat(employeeResponse.getDepartment(), is("Some Department"));
-        assertThat(employeeResponse.getSalary(), is(3000));
+    void test_getEmployee_success() throws ApiBusinessException {
+        when(employeeService.getEmployee(any(ApiV1EmployeesGetEmployeeRequest.class)))
+                .thenReturn(employee1);
+        final ApiV1EmployeesGetEmployeeResponse response = employeeController.getEmployee(1L);
+        assertThat(response.getResultType(), is(ResultType.SUCCESS.getCode()));
+        assertThat(response.getErrorCode(), is(nullValue()));
+        assertThat(response.getErrorMessage(), is(nullValue()));
+        assertThat(response.getEmployee(), is(notNullValue()));
+        assertThat(response.getEmployee().getEmployeeId(), is(1L));
+        assertThat(response.getEmployee().getName(), is("Some Name"));
+        assertThat(response.getEmployee().getDepartment(), is("Some Department"));
+        assertThat(response.getEmployee().getSalary(), is(3000));
     }
 
     /**
@@ -136,38 +133,31 @@ class EmployeeControllerTest {
      */
     @Test
     void test_getEmployee_invalid_employeeId() {
-        final ApiV1EmployeesGetEmployeeResponse employeeResponseNegative = employeeController.getEmployee(-1L);
-        assertThat(employeeResponseNegative.getResultType(), is(ResultType.FAILURE.getCode()));
-        assertThat(employeeResponseNegative.getErrorCode(), is(ErrorCode.INVALID_REQUEST_PARAMETER.getCode()));
-        assertThat(employeeResponseNegative.getErrorMessage(), is("Invalid request parameter"));
-        assertThat(employeeResponseNegative.getEmployeeId(), is(nullValue()));
-        assertThat(employeeResponseNegative.getName(), is(nullValue()));
-        assertThat(employeeResponseNegative.getDepartment(), is(nullValue()));
-        assertThat(employeeResponseNegative.getSalary(), is(nullValue()));
+        final ApiV1EmployeesGetEmployeeResponse responseNegative = employeeController.getEmployee(-1L);
+        assertThat(responseNegative.getResultType(), is(ResultType.FAILURE.getCode()));
+        assertThat(responseNegative.getErrorCode(), is(ErrorCode.INVALID_REQUEST_PARAMETER.getCode()));
+        assertThat(responseNegative.getErrorMessage(), is("Invalid request parameter"));
+        assertThat(responseNegative.getEmployee(), is(nullValue()));
 
-        final ApiV1EmployeesGetEmployeeResponse employeeResponseZero = employeeController.getEmployee(0L);
-        assertThat(employeeResponseZero.getResultType(), is(ResultType.FAILURE.getCode()));
-        assertThat(employeeResponseZero.getErrorCode(), is(ErrorCode.INVALID_REQUEST_PARAMETER.getCode()));
-        assertThat(employeeResponseZero.getErrorMessage(), is("Invalid request parameter"));
-        assertThat(employeeResponseZero.getEmployeeId(), is(nullValue()));
-        assertThat(employeeResponseZero.getName(), is(nullValue()));
-        assertThat(employeeResponseZero.getDepartment(), is(nullValue()));
-        assertThat(employeeResponseZero.getSalary(), is(nullValue()));
+        final ApiV1EmployeesGetEmployeeResponse responseZero = employeeController.getEmployee(0L);
+        assertThat(responseZero.getResultType(), is(ResultType.FAILURE.getCode()));
+        assertThat(responseZero.getErrorCode(), is(ErrorCode.INVALID_REQUEST_PARAMETER.getCode()));
+        assertThat(responseZero.getErrorMessage(), is("Invalid request parameter"));
+        assertThat(responseNegative.getEmployee(), is(nullValue()));
     }
 
     /**
      * getEmployee - Failure case - employeeId is valid but is not found by the service
      */
     @Test
-    void test_getEmployee_nonexistent_employeeId() {
-        final ApiV1EmployeesGetEmployeeResponse employeeResponse = employeeController.getEmployee(5L);
-        assertThat(employeeResponse.getResultType(), is(ResultType.FAILURE.getCode()));
-        assertThat(employeeResponse.getErrorCode(), is(ErrorCode.NOT_FOUND.getCode()));
-        assertThat(employeeResponse.getErrorMessage(), is("Employee not found"));
-        assertThat(employeeResponse.getEmployeeId(), is(nullValue()));
-        assertThat(employeeResponse.getName(), is(nullValue()));
-        assertThat(employeeResponse.getDepartment(), is(nullValue()));
-        assertThat(employeeResponse.getSalary(), is(nullValue()));
+    void test_getEmployee_nonexistent_employeeId() throws ApiBusinessException {
+        when(employeeService.getEmployee(any(ApiV1EmployeesGetEmployeeRequest.class)))
+                .thenThrow(new ApiBusinessException("anyPlaceCode", ErrorCode.NOT_FOUND, "anyMessage"));
+        final ApiV1EmployeesGetEmployeeResponse response = employeeController.getEmployee(5L);
+        assertThat(response.getResultType(), is(ResultType.FAILURE.getCode()));
+        assertThat(response.getErrorCode(), is(ErrorCode.NOT_FOUND.getCode()));
+        assertThat(response.getErrorMessage(), is("Employee not found"));
+        assertThat(response.getEmployee(), is(nullValue()));
     }
 
     /**
@@ -176,17 +166,14 @@ class EmployeeControllerTest {
     @Test
     void test_getEmployee_ApiBusinessException() throws ApiBusinessException {
         doThrow(new ApiBusinessException("anyPlaceCode", ErrorCode.SYSTEM_ERROR, "anyErrorMessage"))
-                .when(employeeService).getEmployee(any(Long.class));
+                .when(employeeService).getEmployee(any(ApiV1EmployeesGetEmployeeRequest.class));
 
-        final ApiV1EmployeesGetEmployeeResponse employeeResponse = employeeController.getEmployee(1L);
+        final ApiV1EmployeesGetEmployeeResponse response = employeeController.getEmployee(1L);
 
-        assertThat(employeeResponse.getResultType(), is(ResultType.FAILURE.getCode()));
-        assertThat(employeeResponse.getErrorCode(), is(ErrorCode.SYSTEM_ERROR.getCode()));
-        assertThat(employeeResponse.getErrorMessage(), is("System error"));
-        assertThat(employeeResponse.getEmployeeId(), is(nullValue()));
-        assertThat(employeeResponse.getName(), is(nullValue()));
-        assertThat(employeeResponse.getDepartment(), is(nullValue()));
-        assertThat(employeeResponse.getSalary(), is(nullValue()));
+        assertThat(response.getResultType(), is(ResultType.FAILURE.getCode()));
+        assertThat(response.getErrorCode(), is(ErrorCode.SYSTEM_ERROR.getCode()));
+        assertThat(response.getErrorMessage(), is("System error"));
+        assertThat(response.getEmployee(), is(nullValue()));
     }
 
     /**
@@ -194,17 +181,14 @@ class EmployeeControllerTest {
      */
     @Test
     void test_getEmployee_RuntimeException() throws ApiBusinessException {
-        doThrow(RuntimeException.class).when(employeeService).getEmployee(any(Long.class));
+        doThrow(RuntimeException.class).when(employeeService).getEmployee(any(ApiV1EmployeesGetEmployeeRequest.class));
 
-        final ApiV1EmployeesGetEmployeeResponse employeeResponse = employeeController.getEmployee(1L);
+        final ApiV1EmployeesGetEmployeeResponse response = employeeController.getEmployee(1L);
 
-        assertThat(employeeResponse.getResultType(), is(ResultType.FAILURE.getCode()));
-        assertThat(employeeResponse.getErrorCode(), is(ErrorCode.UNKNOWN.getCode()));
-        assertThat(employeeResponse.getErrorMessage(), is("Unknown error"));
-        assertThat(employeeResponse.getEmployeeId(), is(nullValue()));
-        assertThat(employeeResponse.getName(), is(nullValue()));
-        assertThat(employeeResponse.getDepartment(), is(nullValue()));
-        assertThat(employeeResponse.getSalary(), is(nullValue()));
+        assertThat(response.getResultType(), is(ResultType.FAILURE.getCode()));
+        assertThat(response.getErrorCode(), is(ErrorCode.UNKNOWN.getCode()));
+        assertThat(response.getErrorMessage(), is("Unknown error"));
+        assertThat(response.getEmployee(), is(nullValue()));
     }
 
     /**
@@ -218,15 +202,16 @@ class EmployeeControllerTest {
                 .salary(4500)
                 .build();
 
-        final ApiV1EmployeesSaveEmployeeResponse employeeResponse = employeeController.saveEmployee(request);
+        final ApiV1EmployeesSaveEmployeeResponse response = employeeController.saveEmployee(request);
 
-        assertThat(employeeResponse.getResultType(), is(ResultType.SUCCESS.getCode()));
-        assertThat(employeeResponse.getErrorCode(), is(nullValue()));
-        assertThat(employeeResponse.getErrorMessage(), is(nullValue()));
-        assertThat(employeeResponse.getEmployee().getEmployeeId(), is(1L));
-        assertThat(employeeResponse.getEmployee().getName(), is("Some Name"));
-        assertThat(employeeResponse.getEmployee().getDepartment(), is("Some Department"));
-        assertThat(employeeResponse.getEmployee().getSalary(), is(3000));
+        assertThat(response.getResultType(), is(ResultType.SUCCESS.getCode()));
+        assertThat(response.getErrorCode(), is(nullValue()));
+        assertThat(response.getErrorMessage(), is(nullValue()));
+        assertThat(response.getEmployee(), is(notNullValue()));
+        assertThat(response.getEmployee().getEmployeeId(), is(1L));
+        assertThat(response.getEmployee().getName(), is("Some Name"));
+        assertThat(response.getEmployee().getDepartment(), is("Some Department"));
+        assertThat(response.getEmployee().getSalary(), is(3000));
         verify(employeeService, times(1)).saveEmployee(request);
     }
 
@@ -242,12 +227,12 @@ class EmployeeControllerTest {
                 .salary(4500)
                 .build();
 
-        ApiV1EmployeesSaveEmployeeResponse employeeResponse = employeeController.saveEmployee(request);
+        ApiV1EmployeesSaveEmployeeResponse response = employeeController.saveEmployee(request);
 
-        assertThat(employeeResponse.getResultType(), is(ResultType.FAILURE.getCode()));
-        assertThat(employeeResponse.getErrorCode(), is(ErrorCode.INVALID_REQUEST_PARAMETER.getCode()));
-        assertThat(employeeResponse.getErrorMessage(), is("Invalid request parameter"));
-        assertThat(employeeResponse.getEmployee(), is(nullValue()));
+        assertThat(response.getResultType(), is(ResultType.FAILURE.getCode()));
+        assertThat(response.getErrorCode(), is(ErrorCode.INVALID_REQUEST_PARAMETER.getCode()));
+        assertThat(response.getErrorMessage(), is("Invalid request parameter"));
+        assertThat(response.getEmployee(), is(nullValue()));
         verify(employeeService, times(0)).saveEmployee(request);
 
         // Test name length greater than maximum
@@ -257,12 +242,12 @@ class EmployeeControllerTest {
                 .salary(4500)
                 .build();
 
-        employeeResponse = employeeController.saveEmployee(request);
+        response = employeeController.saveEmployee(request);
 
-        assertThat(employeeResponse.getResultType(), is(ResultType.FAILURE.getCode()));
-        assertThat(employeeResponse.getErrorCode(), is(ErrorCode.INVALID_REQUEST_PARAMETER.getCode()));
-        assertThat(employeeResponse.getErrorMessage(), is("Invalid request parameter"));
-        assertThat(employeeResponse.getEmployee(), is(nullValue()));
+        assertThat(response.getResultType(), is(ResultType.FAILURE.getCode()));
+        assertThat(response.getErrorCode(), is(ErrorCode.INVALID_REQUEST_PARAMETER.getCode()));
+        assertThat(response.getErrorMessage(), is("Invalid request parameter"));
+        assertThat(response.getEmployee(), is(nullValue()));
         verify(employeeService, times(0)).saveEmployee(request);
     }
 
@@ -278,12 +263,12 @@ class EmployeeControllerTest {
                 .salary(4500)
                 .build();
 
-        ApiV1EmployeesSaveEmployeeResponse employeeResponse = employeeController.saveEmployee(request);
+        ApiV1EmployeesSaveEmployeeResponse response = employeeController.saveEmployee(request);
 
-        assertThat(employeeResponse.getResultType(), is(ResultType.FAILURE.getCode()));
-        assertThat(employeeResponse.getErrorCode(), is(ErrorCode.INVALID_REQUEST_PARAMETER.getCode()));
-        assertThat(employeeResponse.getErrorMessage(), is("Invalid request parameter"));
-        assertThat(employeeResponse.getEmployee(), is(nullValue()));
+        assertThat(response.getResultType(), is(ResultType.FAILURE.getCode()));
+        assertThat(response.getErrorCode(), is(ErrorCode.INVALID_REQUEST_PARAMETER.getCode()));
+        assertThat(response.getErrorMessage(), is("Invalid request parameter"));
+        assertThat(response.getEmployee(), is(nullValue()));
         verify(employeeService, times(0)).saveEmployee(request);
 
         // Test department length greater than maximum
@@ -293,12 +278,12 @@ class EmployeeControllerTest {
                 .salary(4500)
                 .build();
 
-        employeeResponse = employeeController.saveEmployee(request);
+        response = employeeController.saveEmployee(request);
 
-        assertThat(employeeResponse.getResultType(), is(ResultType.FAILURE.getCode()));
-        assertThat(employeeResponse.getErrorCode(), is(ErrorCode.INVALID_REQUEST_PARAMETER.getCode()));
-        assertThat(employeeResponse.getErrorMessage(), is("Invalid request parameter"));
-        assertThat(employeeResponse.getEmployee(), is(nullValue()));
+        assertThat(response.getResultType(), is(ResultType.FAILURE.getCode()));
+        assertThat(response.getErrorCode(), is(ErrorCode.INVALID_REQUEST_PARAMETER.getCode()));
+        assertThat(response.getErrorMessage(), is("Invalid request parameter"));
+        assertThat(response.getEmployee(), is(nullValue()));
         verify(employeeService, times(0)).saveEmployee(request);
     }
 
@@ -315,12 +300,12 @@ class EmployeeControllerTest {
                 .salary(4500)
                 .build();
 
-        final ApiV1EmployeesSaveEmployeeResponse employeeResponse = employeeController.saveEmployee(request);
+        final ApiV1EmployeesSaveEmployeeResponse response = employeeController.saveEmployee(request);
 
-        assertThat(employeeResponse.getResultType(), is(ResultType.FAILURE.getCode()));
-        assertThat(employeeResponse.getErrorCode(), is(ErrorCode.SYSTEM_ERROR.getCode()));
-        assertThat(employeeResponse.getErrorMessage(), is("System error"));
-        assertThat(employeeResponse.getEmployee(), is(nullValue()));
+        assertThat(response.getResultType(), is(ResultType.FAILURE.getCode()));
+        assertThat(response.getErrorCode(), is(ErrorCode.SYSTEM_ERROR.getCode()));
+        assertThat(response.getErrorMessage(), is("System error"));
+        assertThat(response.getEmployee(), is(nullValue()));
         verify(employeeService, times(1)).saveEmployee(request);
     }
 
@@ -337,12 +322,12 @@ class EmployeeControllerTest {
                 .salary(4500)
                 .build();
 
-        final ApiV1EmployeesSaveEmployeeResponse employeeResponse = employeeController.saveEmployee(request);
+        final ApiV1EmployeesSaveEmployeeResponse response = employeeController.saveEmployee(request);
 
-        assertThat(employeeResponse.getResultType(), is(ResultType.FAILURE.getCode()));
-        assertThat(employeeResponse.getErrorCode(), is(ErrorCode.UNKNOWN.getCode()));
-        assertThat(employeeResponse.getErrorMessage(), is("Unknown error"));
-        assertThat(employeeResponse.getEmployee(), is(nullValue()));
+        assertThat(response.getResultType(), is(ResultType.FAILURE.getCode()));
+        assertThat(response.getErrorCode(), is(ErrorCode.UNKNOWN.getCode()));
+        assertThat(response.getErrorMessage(), is("Unknown error"));
+        assertThat(response.getEmployee(), is(nullValue()));
         verify(employeeService, times(1)).saveEmployee(request);
     }
 
@@ -358,12 +343,12 @@ class EmployeeControllerTest {
                 .salary(-100)
                 .build();
 
-        ApiV1EmployeesSaveEmployeeResponse employeeResponse = employeeController.saveEmployee(request);
+        ApiV1EmployeesSaveEmployeeResponse response = employeeController.saveEmployee(request);
 
-        assertThat(employeeResponse.getResultType(), is(ResultType.FAILURE.getCode()));
-        assertThat(employeeResponse.getErrorCode(), is(ErrorCode.INVALID_REQUEST_PARAMETER.getCode()));
-        assertThat(employeeResponse.getErrorMessage(), is("Invalid request parameter"));
-        assertThat(employeeResponse.getEmployee(), is(nullValue()));
+        assertThat(response.getResultType(), is(ResultType.FAILURE.getCode()));
+        assertThat(response.getErrorCode(), is(ErrorCode.INVALID_REQUEST_PARAMETER.getCode()));
+        assertThat(response.getErrorMessage(), is("Invalid request parameter"));
+        assertThat(response.getEmployee(), is(nullValue()));
         verify(employeeService, times(0)).saveEmployee(request);
 
         // Test salary is zero
@@ -373,12 +358,12 @@ class EmployeeControllerTest {
                 .salary(0)
                 .build();
 
-        employeeResponse = employeeController.saveEmployee(request);
+        response = employeeController.saveEmployee(request);
 
-        assertThat(employeeResponse.getResultType(), is(ResultType.FAILURE.getCode()));
-        assertThat(employeeResponse.getErrorCode(), is(ErrorCode.INVALID_REQUEST_PARAMETER.getCode()));
-        assertThat(employeeResponse.getErrorMessage(), is("Invalid request parameter"));
-        assertThat(employeeResponse.getEmployee(), is(nullValue()));
+        assertThat(response.getResultType(), is(ResultType.FAILURE.getCode()));
+        assertThat(response.getErrorCode(), is(ErrorCode.INVALID_REQUEST_PARAMETER.getCode()));
+        assertThat(response.getErrorMessage(), is("Invalid request parameter"));
+        assertThat(response.getEmployee(), is(nullValue()));
         verify(employeeService, times(0)).saveEmployee(request);
     }
 
@@ -386,10 +371,78 @@ class EmployeeControllerTest {
      * deleteEmployee - Success case
      */
     @Test
-    void test_deleteEmployee_success() {
-        employeeController.deleteEmployee(1L);
+    void test_deleteEmployee_success() throws ApiBusinessException {
+        ApiV1EmployeesDeleteEmployeeResponse response = employeeController.deleteEmployee(1L);
 
-        verify(employeeService, times(1)).deleteEmployee(1L);
+        assertThat(response.getResultType(), is(ResultType.SUCCESS.getCode()));
+        assertThat(response.getErrorCode(), is(nullValue()));
+        assertThat(response.getErrorMessage(), is(nullValue()));
+        assertThat(response.getEmployee(), is(notNullValue()));
+        assertThat(response.getEmployee().getEmployeeId(), is(1L));
+        assertThat(response.getEmployee().getName(), is("Some Name"));
+        assertThat(response.getEmployee().getDepartment(), is("Some Department"));
+        assertThat(response.getEmployee().getSalary(), is(3000));
+        verify(employeeService, times(1)).deleteEmployee(any(ApiV1EmployeesDeleteEmployeeRequest.class));
+    }
+
+    /**
+     * deleteEmployee - Failure case - employeeId is invalid
+     */
+    @Test
+    void test_deleteEmployee_invalid_employeeId() {
+        final ApiV1EmployeesDeleteEmployeeResponse responseNegative = employeeController.deleteEmployee(-1L);
+        assertThat(responseNegative.getResultType(), is(ResultType.FAILURE.getCode()));
+        assertThat(responseNegative.getErrorCode(), is(ErrorCode.INVALID_REQUEST_PARAMETER.getCode()));
+        assertThat(responseNegative.getErrorMessage(), is("Invalid request parameter"));
+        assertThat(responseNegative.getEmployee(), is(nullValue()));
+
+        final ApiV1EmployeesDeleteEmployeeResponse responseZero = employeeController.deleteEmployee(0L);
+        assertThat(responseZero.getResultType(), is(ResultType.FAILURE.getCode()));
+        assertThat(responseZero.getErrorCode(), is(ErrorCode.INVALID_REQUEST_PARAMETER.getCode()));
+        assertThat(responseZero.getErrorMessage(), is("Invalid request parameter"));
+        assertThat(responseNegative.getEmployee(), is(nullValue()));
+    }
+
+    /**
+     * deleteEmployee - Failure case - employeeId not found by service
+     */
+    @Test
+    void test_deleteEmployee_nonexistent_employeeId() throws ApiBusinessException {
+        when(employeeService.deleteEmployee((any(ApiV1EmployeesDeleteEmployeeRequest.class))))
+                .thenThrow(new ApiBusinessException("somePlaceCode", ErrorCode.NOT_FOUND, "someMessage"));
+        final ApiV1EmployeesDeleteEmployeeResponse response = employeeController.deleteEmployee(10L);
+        assertThat(response.getResultType(), is(ResultType.FAILURE.getCode()));
+        assertThat(response.getErrorCode(), is(ErrorCode.NOT_FOUND.getCode()));
+        assertThat(response.getErrorMessage(), is("Employee not found"));
+        assertThat(response.getEmployee(), is(nullValue()));
+    }
+
+    /**
+     * deleteEmployee - Failure case - service throws ApiBusinessException
+     */
+    @Test
+    void test_deleteEmployee_invalid_ApiBusinessException() throws ApiBusinessException {
+        when(employeeService.deleteEmployee((any(ApiV1EmployeesDeleteEmployeeRequest.class))))
+                .thenThrow(new ApiBusinessException("anyPlaceCode", ErrorCode.SYSTEM_ERROR, "System error"));
+        final ApiV1EmployeesDeleteEmployeeResponse response = employeeController.deleteEmployee(1L);
+        assertThat(response.getResultType(), is(ResultType.FAILURE.getCode()));
+        assertThat(response.getErrorCode(), is(ErrorCode.SYSTEM_ERROR.getCode()));
+        assertThat(response.getErrorMessage(), is("System error"));
+        assertThat(response.getEmployee(), is(nullValue()));
+    }
+
+    /**
+     * deleteEmployee - Failure case - service throws general exception
+     */
+    @Test
+    void test_deleteEmployee_invalid_RuntimeException() throws ApiBusinessException {
+        when(employeeService.deleteEmployee((any(ApiV1EmployeesDeleteEmployeeRequest.class))))
+                .thenThrow(RuntimeException.class);
+        final ApiV1EmployeesDeleteEmployeeResponse response = employeeController.deleteEmployee(1L);
+        assertThat(response.getResultType(), is(ResultType.FAILURE.getCode()));
+        assertThat(response.getErrorCode(), is(ErrorCode.UNKNOWN.getCode()));
+        assertThat(response.getErrorMessage(), is("Unknown error"));
+        assertThat(response.getEmployee(), is(nullValue()));
     }
 
     /**
@@ -418,7 +471,7 @@ class EmployeeControllerTest {
         employee.setSalary(6000);
 
         doThrow(new ApiBusinessException("anyPlaceCode", ErrorCode.SYSTEM_ERROR, "anyErrorMessage"))
-                .when(employeeService).getEmployee(any(Long.class));
+                .when(employeeService).getEmployee(any(ApiV1EmployeesGetEmployeeRequest.class));
         employeeController.updateEmployee(employee, -1L);
 
         verify(employeeService, times(0)).updateEmployee(employee);
@@ -435,7 +488,7 @@ class EmployeeControllerTest {
         employee.setSalary(6000);
 
         doThrow(new ApiBusinessException("anyPlaceCode", ErrorCode.NOT_FOUND, "anyErrorMessage"))
-                .when(employeeService).getEmployee(any(Long.class));
+                .when(employeeService).getEmployee(any(ApiV1EmployeesGetEmployeeRequest.class));
         employeeController.updateEmployee(employee, -1L);
 
         verify(employeeService, times(0)).updateEmployee(employee);

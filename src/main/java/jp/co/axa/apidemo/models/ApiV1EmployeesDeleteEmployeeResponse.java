@@ -6,12 +6,12 @@ import lombok.experimental.SuperBuilder;
 import org.springframework.lang.Nullable;
 
 /**
- * Response DTO for GET api/v1/employees/{employeeId}
+ * Response DTO for DELETE api/v1/employees/{employeeId}
  */
 @Getter
 @SuperBuilder
 @NoArgsConstructor
-public class ApiV1EmployeesGetEmployeeResponse extends BaseResponse {
+public class ApiV1EmployeesDeleteEmployeeResponse extends BaseResponse {
     @Nullable
     private ApiV1EmployeeEntity employee;
 }

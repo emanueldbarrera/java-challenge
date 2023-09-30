@@ -3,6 +3,8 @@ package jp.co.axa.apidemo.services;
 import jp.co.axa.apidemo.common.ApiBusinessException;
 import jp.co.axa.apidemo.common.ErrorCode;
 import jp.co.axa.apidemo.entities.Employee;
+import jp.co.axa.apidemo.models.ApiV1EmployeesDeleteEmployeeRequest;
+import jp.co.axa.apidemo.models.ApiV1EmployeesGetEmployeeRequest;
 import jp.co.axa.apidemo.models.ApiV1EmployeesSaveEmployeeRequest;
 import jp.co.axa.apidemo.repositories.EmployeeRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -99,7 +101,10 @@ class EmployeeServiceImplTest {
      */
     @Test
     void test_getEmployee_success() throws ApiBusinessException {
-        final Employee employee = employeeService.getEmployee(1L);
+        final ApiV1EmployeesGetEmployeeRequest request = ApiV1EmployeesGetEmployeeRequest.builder()
+                .employeeId(1L)
+                .build();
+        final Employee employee = employeeService.getEmployee(request);
 
         assertThat(employee.getId(), is(1L));
         assertThat(employee.getDepartment(), is("Some Department"));
@@ -108,21 +113,14 @@ class EmployeeServiceImplTest {
     }
 
     /**
-     * getEmployee - Failure case - employeeId is invalid
-     */
-    @Test
-    void test_getEmployee_invalid_employeeId() {
-        final ApiBusinessException apiBusinessException = assertThrows(ApiBusinessException.class, () -> employeeService.getEmployee(-1L));
-        assertThat(apiBusinessException.getErrorCode(), is(ErrorCode.NOT_FOUND));
-        assertThat(apiBusinessException.getMessage(), is("Employee not found"));
-    }
-
-    /**
      * getEmployee - Failure case - employeeId is valid but does not exist in the database
      */
     @Test
     void test_getEmployee_nonexistent_employeeId() {
-        final ApiBusinessException apiBusinessException = assertThrows(ApiBusinessException.class, () -> employeeService.getEmployee(5L));
+        final ApiV1EmployeesGetEmployeeRequest request = ApiV1EmployeesGetEmployeeRequest.builder()
+                .employeeId(5L)
+                .build();
+        final ApiBusinessException apiBusinessException = assertThrows(ApiBusinessException.class, () -> employeeService.getEmployee(request));
         assertThat(apiBusinessException.getErrorCode(), is(ErrorCode.NOT_FOUND));
         assertThat(apiBusinessException.getMessage(), is("Employee not found"));
     }
@@ -169,10 +167,17 @@ class EmployeeServiceImplTest {
      * deleteEmployee - Success case
      */
     @Test
-    void test_deleteEmployee_success() {
-        employeeService.deleteEmployee(1L);
+    void test_deleteEmployee_success() throws ApiBusinessException {
+        final ApiV1EmployeesDeleteEmployeeRequest request = ApiV1EmployeesDeleteEmployeeRequest.builder()
+                .employeeId(1L)
+                .build();
+        final Employee employee = employeeService.deleteEmployee(request);
 
         verify(employeeRepository, times(1)).deleteById(1L);
+        assertThat(employee.getId(), is(1L));
+        assertThat(employee.getDepartment(), is("Some Department"));
+        assertThat(employee.getName(), is("Some Name"));
+        assertThat(employee.getSalary(), is(3000));
     }
 
     /**
