@@ -1,52 +1,28 @@
-### How to use this spring-boot project
+# Java Challenge by Emanuel Barrera
 
-- Install packages with `mvn package`
-- Run `mvn spring-boot:run` for starting the application (or use your IDE)
+### What I did
 
-Application (with the embedded H2 database) is ready to be used ! You can access the url below for testing it :
+- First, I did a manual test of the api, using the Swagger tool
+- Fixed some bugs I found during manual testing
 
-- Swagger UI : http://localhost:8080/swagger-ui.html
-- H2 UI : http://localhost:8080/h2-console
+#### What I would like to improve
 
-> Don't forget to set the `JDBC URL` value as `jdbc:h2:mem:testdb` for H2 UI.
+- Add custom exceptions
+- Add unit tests with junit5, so that I could code using TDD
+- Add DTO objects for request and responsses
+- Add Spring Security
+- Improve javadoc and comments
+- Use a logging library
+- Add integration tests
+- Add e2e tests
+- Add cache for the database
+- Include a code coverage plugin
+- Include sonarqube for code analysis
+- Include versioning
+- Include support for environments
 
+#### My experience in Java
 
-
-### Instructions
-
-- download the zip file of this project
-- create a repository in your own github named 'java-challenge'
-- clone your repository in a folder on your machine
-- extract the zip file in this folder
-- commit and push
-
-- Enhance the code in any ways you can see, you are free! Some possibilities:
-  - Add tests
-  - Change syntax
-  - Protect controller end points
-  - Add caching logic for database calls
-  - Improve doc and comments
-  - Fix any bug you might find
-- Edit readme.md and add any comments. It can be about what you did, what you would have done if you had more time, etc.
-- Send us the link of your repository.
-
-#### Restrictions
-- use java 8
-
-
-#### What we will look for
-- Readability of your code
-- Documentation
-- Comments in your code 
-- Appropriate usage of spring boot
-- Appropriate usage of packages
-- Is the application running as expected
-- No performance issues
-
-#### Your experience in Java
-
-Please let us know more about your Java experience in a few sentences. For example:
-
-- I have 3 years experience in Java and I started to use Spring Boot from last year
-- I'm a beginner and just recently learned Spring Boot
-- I know Spring Boot very well and have been using it for many years
+- I have been using Java since I started my career 9 years ago. (the only exception being the ~2 years I worked at Eventbrite, where we used Python)
+- The first framework I used professionally was Grails, for about 2 years. Then my company moved to Spring Boot, and it's the framework I've used ever since.
+- I'm using Spring Boot at my current job.
