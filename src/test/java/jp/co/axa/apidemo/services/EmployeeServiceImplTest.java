@@ -22,7 +22,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 /**
  * Test class for {@link EmployeeServiceImplTest}
  */
-public class EmployeeServiceImplTest {
+class EmployeeServiceImplTest {
 
     @Mock
     private EmployeeRepository employeeRepository;
@@ -30,7 +30,7 @@ public class EmployeeServiceImplTest {
     private EmployeeServiceImpl employeeService;
 
     @BeforeEach
-    public void init() {
+    void init() {
         initMocks(this);
 
         // Set test Employee entities
@@ -53,10 +53,11 @@ public class EmployeeServiceImplTest {
 
     /**
      * Success case
+     *
      * @throws ApiBusinessException
      */
     @Test
-    public void test_getEmployee_success() throws ApiBusinessException {
+    void test_getEmployee_success() throws ApiBusinessException {
         final Employee employee = employeeService.getEmployee(1L);
 
         assertThat(employee.getId(), is(1L));
@@ -69,7 +70,7 @@ public class EmployeeServiceImplTest {
      * Failure case - employeeId is invalid
      */
     @Test
-    public void test_getEmployee_invalid_employeeId() {
+    void test_getEmployee_invalid_employeeId() {
         final ApiBusinessException apiBusinessException = assertThrows(ApiBusinessException.class, () -> employeeService.getEmployee(-1L));
         assertThat(apiBusinessException.getErrorCode(), is(ErrorCode.NOT_FOUND));
         assertThat(apiBusinessException.getMessage(), is("Employee not found"));
@@ -79,7 +80,7 @@ public class EmployeeServiceImplTest {
      * Failure case - employeeId is valid but does not exist in the database
      */
     @Test
-    public void test_getEmployee_nonexistent_employeeId() {
+    void test_getEmployee_nonexistent_employeeId() {
         final ApiBusinessException apiBusinessException = assertThrows(ApiBusinessException.class, () -> employeeService.getEmployee(5L));
         assertThat(apiBusinessException.getErrorCode(), is(ErrorCode.NOT_FOUND));
         assertThat(apiBusinessException.getMessage(), is("Employee not found"));
