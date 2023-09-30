@@ -3,6 +3,7 @@ package jp.co.axa.apidemo.services;
 import jp.co.axa.apidemo.common.ApiBusinessException;
 import jp.co.axa.apidemo.common.ErrorCode;
 import jp.co.axa.apidemo.entities.Employee;
+import jp.co.axa.apidemo.models.ApiV1EmployeesSaveEmployeeRequest;
 import jp.co.axa.apidemo.repositories.EmployeeRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,8 +31,17 @@ public class EmployeeServiceImpl implements EmployeeService {
         return optionalEmployee.get();
     }
 
-    public void saveEmployee(Employee employee) {
-        employeeRepository.saveAndFlush(employee);
+    public Employee saveEmployee(ApiV1EmployeesSaveEmployeeRequest employeeRequest) throws ApiBusinessException {
+        final Employee employee = Employee.builder()
+                .name(employeeRequest.getName())
+                .department(employeeRequest.getDepartment())
+                .salary(employeeRequest.getSalary())
+                .build();
+        try {
+            return employeeRepository.saveAndFlush(employee);
+        } catch (Exception e) {
+            throw new ApiBusinessException("0-0-2", ErrorCode.SYSTEM_ERROR, "Database error");
+        }
     }
 
     public void deleteEmployee(Long employeeId) {

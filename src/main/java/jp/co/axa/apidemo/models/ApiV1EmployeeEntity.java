@@ -8,7 +8,7 @@ import org.springframework.lang.Nullable;
 @Getter
 @Builder
 @AllArgsConstructor
-public class ApiV1EmployeesGetEmployeesEntity {
+public class ApiV1EmployeeEntity {
     @Nullable
     private Long employeeId;
     @Nullable

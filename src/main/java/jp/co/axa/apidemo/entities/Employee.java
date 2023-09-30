@@ -1,9 +1,7 @@
 package jp.co.axa.apidemo.entities;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -14,7 +12,9 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name="EMPLOYEE")
+@Builder
 @NoArgsConstructor
+@AllArgsConstructor
 public class Employee {
 
     @Getter

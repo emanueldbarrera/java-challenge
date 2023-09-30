@@ -13,5 +13,5 @@ import java.util.List;
 @SuperBuilder
 @NoArgsConstructor
 public class ApiV1EmployeesGetEmployeesResponse extends BaseResponse {
-    private List<ApiV1EmployeesGetEmployeesEntity> employees;
+    private List<ApiV1EmployeeEntity> employees;
 }

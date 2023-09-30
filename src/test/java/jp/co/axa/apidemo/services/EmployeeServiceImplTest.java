@@ -3,6 +3,7 @@ package jp.co.axa.apidemo.services;
 import jp.co.axa.apidemo.common.ApiBusinessException;
 import jp.co.axa.apidemo.common.ErrorCode;
 import jp.co.axa.apidemo.entities.Employee;
+import jp.co.axa.apidemo.models.ApiV1EmployeesSaveEmployeeRequest;
 import jp.co.axa.apidemo.repositories.EmployeeRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,6 +15,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -56,6 +58,8 @@ class EmployeeServiceImplTest {
         when(employeeRepository.findById(any(Long.class))).thenReturn(Optional.empty());
         when(employeeRepository.findById(1L)).thenReturn(Optional.of(employee1));
         when(employeeRepository.findById(2L)).thenReturn(Optional.of(employee2));
+
+        when(employeeRepository.saveAndFlush(any(Employee.class))).thenReturn(employee1);
     }
 
     /**
@@ -127,16 +131,38 @@ class EmployeeServiceImplTest {
      * saveEmployees - Success case
      */
     @Test
-    void test_saveEmployees_success() {
-        final Employee employee = new Employee();
-        employee.setId(2L);
-        employee.setName("Other Name");
-        employee.setDepartment("Other Department");
-        employee.setSalary(4500);
+    void test_saveEmployees_success() throws ApiBusinessException {
+        final ApiV1EmployeesSaveEmployeeRequest request = ApiV1EmployeesSaveEmployeeRequest.builder()
+                .name("Some Name")
+                .department("Some Department")
+                .salary(3000)
+                .build();
 
-        employeeService.saveEmployee(employee);
+        final Employee employee = employeeService.saveEmployee(request);
 
-        verify(employeeRepository, times(1)).saveAndFlush(employee);
+        verify(employeeRepository, times(1)).saveAndFlush(any(Employee.class));
+        assertThat(employee, is(notNullValue()));
+        assertThat(employee.getName(), is("Some Name"));
+        assertThat(employee.getId(), is(1L));
+        assertThat(employee.getDepartment(), is("Some Department"));
+        assertThat(employee.getSalary(), is(3000));
+    }
+
+    /**
+     * saveEmployees - Failure case - database error
+     */
+    @Test
+    void test_saveEmployees_failure_database_error() throws ApiBusinessException {
+        when(employeeRepository.saveAndFlush(any(Employee.class))).thenThrow(RuntimeException.class);
+        final ApiV1EmployeesSaveEmployeeRequest request = ApiV1EmployeesSaveEmployeeRequest.builder()
+                .name("Some Name")
+                .department("Some Department")
+                .salary(3000)
+                .build();
+
+        final ApiBusinessException apiBusinessException = assertThrows(ApiBusinessException.class, () -> employeeService.saveEmployee(request));
+        assertThat(apiBusinessException.getErrorCode(), is(ErrorCode.SYSTEM_ERROR));
+        assertThat(apiBusinessException.getMessage(), is("Database error"));
     }
 
     /**

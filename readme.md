@@ -25,6 +25,7 @@
 - Include support for environments
 - Add pagination
 - Parameterize Departments
+- Salary should accept decimal
 
 #### My experience in Java
 

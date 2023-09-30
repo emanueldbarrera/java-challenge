@@ -3,12 +3,11 @@ package jp.co.axa.apidemo.controllers;
 import jp.co.axa.apidemo.common.ApiBusinessException;
 import jp.co.axa.apidemo.common.ErrorCode;
 import jp.co.axa.apidemo.entities.Employee;
-import jp.co.axa.apidemo.models.ApiV1EmployeesGetEmployeeRequest;
-import jp.co.axa.apidemo.models.ApiV1EmployeesGetEmployeeResponse;
-import jp.co.axa.apidemo.models.ApiV1EmployeesGetEmployeesResponse;
+import jp.co.axa.apidemo.models.*;
 import jp.co.axa.apidemo.services.EmployeeService;
 import jp.co.axa.apidemo.util.ApiV1EmployeesGetEmployeeResponseUtil;
 import jp.co.axa.apidemo.util.ApiV1EmployeesGetEmployeesResponseUtil;
+import jp.co.axa.apidemo.util.ApiV1EmployeesSaveEmployeeResponseUtil;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,9 +59,22 @@ public class EmployeeController {
     }
 
     @PostMapping("/employees")
-    public void saveEmployee(@RequestBody Employee employee) {
-        employeeService.saveEmployee(employee);
-        log.info("Employee Saved Successfully");
+    public ApiV1EmployeesSaveEmployeeResponse saveEmployee(@RequestBody ApiV1EmployeesSaveEmployeeRequest employeeRequest) {
+        try {
+            employeeRequest.validate();
+            final Employee employee = employeeService.saveEmployee(employeeRequest);
+            log.info("Employee Saved Successfully; employeeId: " + employee.getId());
+            return ApiV1EmployeesSaveEmployeeResponseUtil.buildResponseSuccess(employee);
+        } catch (ConstraintViolationException e) {
+            log.info("Validation error: " + e.getMessage());
+            return ApiV1EmployeesSaveEmployeeResponseUtil.buildResponseFailure(ErrorCode.INVALID_REQUEST_PARAMETER, "Invalid request parameter");
+        } catch (ApiBusinessException e) {
+            log.warn("System error", e.getMessage());
+            return ApiV1EmployeesSaveEmployeeResponseUtil.buildResponseFailure(ErrorCode.SYSTEM_ERROR, "System error");
+        } catch (Exception e) {
+            log.warn("Unknown exception: " + e.getMessage());
+            return ApiV1EmployeesSaveEmployeeResponseUtil.buildResponseFailure(ErrorCode.UNKNOWN, "Unknown error");
+        }
     }
 
     @DeleteMapping("/employees/{employeeId}")
