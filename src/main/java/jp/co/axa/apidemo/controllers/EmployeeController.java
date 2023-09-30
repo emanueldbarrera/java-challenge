@@ -4,11 +4,13 @@ import jp.co.axa.apidemo.common.ApiBusinessException;
 import jp.co.axa.apidemo.common.ErrorCode;
 import jp.co.axa.apidemo.entities.Employee;
 import jp.co.axa.apidemo.services.EmployeeService;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Log4j2
 @RestController
 @RequestMapping("/api/v1")
 public class EmployeeController {
@@ -32,9 +34,9 @@ public class EmployeeController {
             return employeeService.getEmployee(employeeId);
         } catch (ApiBusinessException e) {
             if (e.getErrorCode().equals(ErrorCode.NOT_FOUND)) {
-                System.out.println("Employee Not Found");
+                log.info("Employee Not Found");
             } else {
-                System.out.println("System error");
+                log.info("System error");
             }
         }
         return employee;
@@ -43,13 +45,13 @@ public class EmployeeController {
     @PostMapping("/employees")
     public void saveEmployee(@RequestBody Employee employee) {
         employeeService.saveEmployee(employee);
-        System.out.println("Employee Saved Successfully");
+        log.info("Employee Saved Successfully");
     }
 
     @DeleteMapping("/employees/{employeeId}")
     public void deleteEmployee(@PathVariable(name = "employeeId") Long employeeId) {
         employeeService.deleteEmployee(employeeId);
-        System.out.println("Employee Deleted Successfully");
+        log.info("Employee Deleted Successfully");
     }
 
     @PutMapping("/employees/{employeeId}")
@@ -63,9 +65,9 @@ public class EmployeeController {
             }
         } catch (ApiBusinessException e) {
             if (e.getErrorCode().equals(ErrorCode.NOT_FOUND)) {
-                System.out.println("Employee Not Found");
+                log.info("Employee Not Found");
             } else {
-                System.out.println("System error");
+                log.warn("System error");
             }
         }
     }

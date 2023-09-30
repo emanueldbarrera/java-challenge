@@ -7,13 +7,13 @@
 - Added unit tests with junit5, so that I could code using TDD
 - Added custom exceptions
 - Included sonarqube for code analysis
+- Used a logging library (log4j2)
 
 #### What I would like to improve
 
 - Add DTO objects for request and responses
 - Add Spring Security
 - Improve javadoc and comments
-- Use a logging library
 - Add integration tests
 - Add e2e tests
 - Add cache for the database
