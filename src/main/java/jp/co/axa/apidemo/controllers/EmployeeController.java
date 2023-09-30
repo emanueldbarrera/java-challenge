@@ -4,6 +4,7 @@ import jp.co.axa.apidemo.common.ApiBusinessException;
 import jp.co.axa.apidemo.common.ErrorCode;
 import jp.co.axa.apidemo.entities.Employee;
 import jp.co.axa.apidemo.services.EmployeeService;
+import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -11,16 +12,13 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @Log4j2
+@AllArgsConstructor
 @RestController
 @RequestMapping("/api/v1")
 public class EmployeeController {
 
     @Autowired
     private EmployeeService employeeService;
-
-    public void setEmployeeService(EmployeeService employeeService) {
-        this.employeeService = employeeService;
-    }
 
     @GetMapping("/employees")
     public List<Employee> getEmployees() {

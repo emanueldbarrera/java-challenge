@@ -20,6 +20,8 @@
 - Add cache for the database
 - Include versioning
 - Include support for environments
+- Add pagination
+- Add parameters validations
 
 #### My experience in Java
 
