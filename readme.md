@@ -7,6 +7,7 @@
 - Added unit tests with junit5, so that I could code using TDD
 - Added custom exceptions
 - Included sonarqube for code analysis
+- Included a code coverage plugin for reports (jacoco)
 - Used a logging library (log4j2)
 
 #### What I would like to improve
@@ -17,7 +18,6 @@
 - Add integration tests
 - Add e2e tests
 - Add cache for the database
-- Include a code coverage plugin
 - Include versioning
 - Include support for environments
 
