@@ -6,6 +6,7 @@ import jp.co.axa.apidemo.entities.Employee;
 import jp.co.axa.apidemo.models.ApiV1EmployeesDeleteEmployeeRequest;
 import jp.co.axa.apidemo.models.ApiV1EmployeesGetEmployeeRequest;
 import jp.co.axa.apidemo.models.ApiV1EmployeesSaveEmployeeRequest;
+import jp.co.axa.apidemo.models.ApiV1EmployeesUpdateEmployeeRequest;
 import jp.co.axa.apidemo.repositories.EmployeeRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,11 +35,11 @@ public class EmployeeServiceImpl implements EmployeeService {
         return optionalEmployee.get();
     }
 
-    public Employee saveEmployee(ApiV1EmployeesSaveEmployeeRequest employeeRequest) throws ApiBusinessException {
+    public Employee saveEmployee(ApiV1EmployeesSaveEmployeeRequest request) throws ApiBusinessException {
         final Employee employee = Employee.builder()
-                .name(employeeRequest.getName())
-                .department(employeeRequest.getDepartment())
-                .salary(employeeRequest.getSalary())
+                .name(request.getName())
+                .department(request.getDepartment())
+                .salary(request.getSalary())
                 .build();
         try {
             return employeeRepository.saveAndFlush(employee);
@@ -50,20 +51,47 @@ public class EmployeeServiceImpl implements EmployeeService {
     public Employee deleteEmployee(ApiV1EmployeesDeleteEmployeeRequest request) throws ApiBusinessException {
         // Get employee from database
         final Long employeeId = request.getEmployeeId();
-        Optional<Employee> optionalEmployee = employeeRepository.findById(employeeId);
-        if (!optionalEmployee.isPresent()) {
-            throw new ApiBusinessException("0-0-3", ErrorCode.NOT_FOUND, "Employee not found");
+        Optional<Employee> optionalEmployee;
+        try {
+            optionalEmployee = employeeRepository.findById(employeeId);
+        } catch (Exception e) {
+            throw new ApiBusinessException("0-0-3", ErrorCode.SYSTEM_ERROR, "Database error");
         }
+        if (!optionalEmployee.isPresent()) {
+            throw new ApiBusinessException("0-0-4", ErrorCode.NOT_FOUND, "Employee not found");
+        }
+
         // Delete employee and return a copy
         try {
             employeeRepository.deleteById(employeeId);
         } catch (Exception e) {
-            throw new ApiBusinessException("0-0-4", ErrorCode.SYSTEM_ERROR, "Database error");
+            throw new ApiBusinessException("0-0-5", ErrorCode.SYSTEM_ERROR, "Database error");
         }
         return optionalEmployee.get();
     }
 
-    public void updateEmployee(Employee employee) {
-        employeeRepository.saveAndFlush(employee);
+    public Employee updateEmployee(ApiV1EmployeesUpdateEmployeeRequest request) throws ApiBusinessException {
+        // Get employee from database
+        Optional<Employee> optionalEmployee;
+        try {
+            optionalEmployee = employeeRepository.findById(request.getEmployeeId());
+        } catch (Exception e) {
+            throw new ApiBusinessException("0-0-7", ErrorCode.SYSTEM_ERROR, "Database error");
+        }
+        if (!optionalEmployee.isPresent()) {
+            throw new ApiBusinessException("0-0-8", ErrorCode.NOT_FOUND, "Employee not found");
+        }
+
+        // Update Employee entity
+        final Employee employee = optionalEmployee.get();
+        try {
+            employee.setName(request.getName());
+            employee.setDepartment(request.getDepartment());
+            employee.setSalary(request.getSalary());
+            employeeRepository.saveAndFlush(employee);
+        } catch (Exception e) {
+            throw new ApiBusinessException("0-0-9", ErrorCode.SYSTEM_ERROR, "Database error");
+        }
+        return employee;
     }
 }

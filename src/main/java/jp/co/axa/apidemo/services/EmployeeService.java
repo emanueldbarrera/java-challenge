@@ -5,6 +5,7 @@ import jp.co.axa.apidemo.entities.Employee;
 import jp.co.axa.apidemo.models.ApiV1EmployeesDeleteEmployeeRequest;
 import jp.co.axa.apidemo.models.ApiV1EmployeesGetEmployeeRequest;
 import jp.co.axa.apidemo.models.ApiV1EmployeesSaveEmployeeRequest;
+import jp.co.axa.apidemo.models.ApiV1EmployeesUpdateEmployeeRequest;
 
 import java.util.List;
 
@@ -14,9 +15,9 @@ public interface EmployeeService {
 
     Employee getEmployee(ApiV1EmployeesGetEmployeeRequest request) throws ApiBusinessException;
 
-    Employee saveEmployee(ApiV1EmployeesSaveEmployeeRequest employee) throws ApiBusinessException;
+    Employee saveEmployee(ApiV1EmployeesSaveEmployeeRequest request) throws ApiBusinessException;
 
-    Employee deleteEmployee(ApiV1EmployeesDeleteEmployeeRequest employeeId) throws ApiBusinessException;
+    Employee deleteEmployee(ApiV1EmployeesDeleteEmployeeRequest request) throws ApiBusinessException;
 
-    void updateEmployee(Employee employee);
+    Employee updateEmployee(ApiV1EmployeesUpdateEmployeeRequest request) throws ApiBusinessException;
 }

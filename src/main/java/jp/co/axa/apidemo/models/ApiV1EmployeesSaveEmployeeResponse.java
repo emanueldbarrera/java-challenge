@@ -13,5 +13,5 @@ import org.springframework.lang.Nullable;
 @NoArgsConstructor
 public class ApiV1EmployeesSaveEmployeeResponse extends BaseResponse {
     @Nullable
-    private ApiV1EmployeeEntity employee;
+    private ApiV1EmployeeEntityResponse employee;
 }

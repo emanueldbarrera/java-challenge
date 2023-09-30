@@ -6,6 +6,7 @@ import jp.co.axa.apidemo.entities.Employee;
 import jp.co.axa.apidemo.models.ApiV1EmployeesDeleteEmployeeRequest;
 import jp.co.axa.apidemo.models.ApiV1EmployeesGetEmployeeRequest;
 import jp.co.axa.apidemo.models.ApiV1EmployeesSaveEmployeeRequest;
+import jp.co.axa.apidemo.models.ApiV1EmployeesUpdateEmployeeRequest;
 import jp.co.axa.apidemo.repositories.EmployeeRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -120,7 +121,8 @@ class EmployeeServiceImplTest {
         final ApiV1EmployeesGetEmployeeRequest request = ApiV1EmployeesGetEmployeeRequest.builder()
                 .employeeId(5L)
                 .build();
-        final ApiBusinessException apiBusinessException = assertThrows(ApiBusinessException.class, () -> employeeService.getEmployee(request));
+        final ApiBusinessException apiBusinessException = assertThrows(ApiBusinessException.class,
+                () -> employeeService.getEmployee(request));
         assertThat(apiBusinessException.getErrorCode(), is(ErrorCode.NOT_FOUND));
         assertThat(apiBusinessException.getMessage(), is("Employee not found"));
     }
@@ -158,7 +160,8 @@ class EmployeeServiceImplTest {
                 .salary(3000)
                 .build();
 
-        final ApiBusinessException apiBusinessException = assertThrows(ApiBusinessException.class, () -> employeeService.saveEmployee(request));
+        final ApiBusinessException apiBusinessException = assertThrows(ApiBusinessException.class,
+                () -> employeeService.saveEmployee(request));
         assertThat(apiBusinessException.getErrorCode(), is(ErrorCode.SYSTEM_ERROR));
         assertThat(apiBusinessException.getMessage(), is("Database error"));
     }
@@ -181,18 +184,130 @@ class EmployeeServiceImplTest {
     }
 
     /**
+     * deleteEmployee - Failure case - repository does not find entity
+     */
+    @Test
+    void test_deleteEmployee_failure_not_found() {
+        when(employeeRepository.findById(1L)).thenReturn(Optional.empty());
+        final ApiV1EmployeesDeleteEmployeeRequest request = ApiV1EmployeesDeleteEmployeeRequest.builder()
+                .employeeId(1L)
+                .build();
+
+        final ApiBusinessException apiBusinessException = assertThrows(ApiBusinessException.class,
+                () -> employeeService.deleteEmployee(request));
+        assertThat(apiBusinessException.getErrorCode(), is(ErrorCode.NOT_FOUND));
+        assertThat(apiBusinessException.getMessage(), is("Employee not found"));
+        verify(employeeRepository, times(0)).deleteById(1L);
+    }
+
+    /**
+     * deleteEmployee - Failure case - database error on get
+     */
+    @Test
+    void test_deleteEmployee_database_error_on_get() {
+        doThrow(RuntimeException.class).when(employeeRepository).findById(1L);
+        final ApiV1EmployeesDeleteEmployeeRequest request = ApiV1EmployeesDeleteEmployeeRequest.builder()
+                .employeeId(1L)
+                .build();
+
+        final ApiBusinessException apiBusinessException = assertThrows(ApiBusinessException.class,
+                () -> employeeService.deleteEmployee(request));
+        assertThat(apiBusinessException.getErrorCode(), is(ErrorCode.SYSTEM_ERROR));
+        assertThat(apiBusinessException.getMessage(), is("Database error"));
+        verify(employeeRepository, times(0)).deleteById(1L);
+    }
+
+    /**
+     * deleteEmployee - Failure case - database error on delete
+     */
+    @Test
+    void test_deleteEmployee_database_error_on_delete() {
+        doThrow(RuntimeException.class).when(employeeRepository).deleteById(1L);
+        final ApiV1EmployeesDeleteEmployeeRequest request = ApiV1EmployeesDeleteEmployeeRequest.builder()
+                .employeeId(1L)
+                .build();
+
+        final ApiBusinessException apiBusinessException = assertThrows(ApiBusinessException.class,
+                () -> employeeService.deleteEmployee(request));
+        assertThat(apiBusinessException.getErrorCode(), is(ErrorCode.SYSTEM_ERROR));
+        assertThat(apiBusinessException.getMessage(), is("Database error"));
+        verify(employeeRepository, times(1)).deleteById(1L);
+    }
+
+    /**
      * updateEmployee - Success case
      */
     @Test
-    void test_updateEmployee_success() {
-        final Employee employee = new Employee();
-        employee.setId(2L);
-        employee.setName("Other Name");
-        employee.setDepartment("Other Department");
-        employee.setSalary(4500);
+    void test_updateEmployee_success() throws ApiBusinessException {
+        final ApiV1EmployeesUpdateEmployeeRequest request = ApiV1EmployeesUpdateEmployeeRequest.builder()
+                .employeeId(1L)
+                .name("Different Name")
+                .department("Different Department")
+                .salary(4500)
+                .build();
 
-        employeeService.updateEmployee(employee);
+        employeeService.updateEmployee(request);
 
-        verify(employeeRepository, times(1)).saveAndFlush(employee);
+        verify(employeeRepository, times(1)).saveAndFlush(any(Employee.class));
+    }
+
+    /**
+     * updateEmployee - Failure case - repository does not find entity
+     */
+    @Test
+    void test_updateEmployee_failure_not_found() {
+        when(employeeRepository.findById(1L)).thenReturn(Optional.empty());
+        final ApiV1EmployeesUpdateEmployeeRequest request = ApiV1EmployeesUpdateEmployeeRequest.builder()
+                .employeeId(1L)
+                .name("Different Name")
+                .department("Different Department")
+                .salary(4500)
+                .build();
+
+        final ApiBusinessException apiBusinessException = assertThrows(ApiBusinessException.class,
+                () -> employeeService.updateEmployee(request));
+        assertThat(apiBusinessException.getErrorCode(), is(ErrorCode.NOT_FOUND));
+        assertThat(apiBusinessException.getMessage(), is("Employee not found"));
+        verify(employeeRepository, times(0)).deleteById(1L);
+    }
+
+    /**
+     * updateEmployee - Failure case - database error on get
+     */
+    @Test
+    void test_updateEmployee_database_error_on_get() {
+        doThrow(RuntimeException.class).when(employeeRepository).findById(1L);
+        final ApiV1EmployeesUpdateEmployeeRequest request = ApiV1EmployeesUpdateEmployeeRequest.builder()
+                .employeeId(1L)
+                .name("Different Name")
+                .department("Different Department")
+                .salary(4500)
+                .build();
+
+        final ApiBusinessException apiBusinessException = assertThrows(ApiBusinessException.class,
+                () -> employeeService.updateEmployee(request));
+        assertThat(apiBusinessException.getErrorCode(), is(ErrorCode.SYSTEM_ERROR));
+        assertThat(apiBusinessException.getMessage(), is("Database error"));
+        verify(employeeRepository, times(0)).deleteById(1L);
+    }
+
+    /**
+     * updateEmployee - Failure case - database error on delete
+     */
+    @Test
+    void test_updateEmployee_database_error_on_delete() {
+        doThrow(RuntimeException.class).when(employeeRepository).saveAndFlush(any(Employee.class));
+        final ApiV1EmployeesUpdateEmployeeRequest request = ApiV1EmployeesUpdateEmployeeRequest.builder()
+                .employeeId(1L)
+                .name("Different Name")
+                .department("Different Department")
+                .salary(4500)
+                .build();
+
+        final ApiBusinessException apiBusinessException = assertThrows(ApiBusinessException.class,
+                () -> employeeService.updateEmployee(request));
+        assertThat(apiBusinessException.getErrorCode(), is(ErrorCode.SYSTEM_ERROR));
+        assertThat(apiBusinessException.getMessage(), is("Database error"));
+        verify(employeeRepository, times(1)).saveAndFlush(any(Employee.class));
     }
 }

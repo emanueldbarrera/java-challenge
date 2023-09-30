@@ -3,7 +3,7 @@ package jp.co.axa.apidemo.util;
 import jp.co.axa.apidemo.common.ErrorCode;
 import jp.co.axa.apidemo.common.ResultType;
 import jp.co.axa.apidemo.entities.Employee;
-import jp.co.axa.apidemo.models.ApiV1EmployeeEntity;
+import jp.co.axa.apidemo.models.ApiV1EmployeeEntityResponse;
 import jp.co.axa.apidemo.models.ApiV1EmployeesGetEmployeeResponse;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -13,7 +13,7 @@ public class ApiV1EmployeesGetEmployeeResponseUtil {
 
     public static ApiV1EmployeesGetEmployeeResponse buildResponseSuccess(final Employee employee) {
         return ApiV1EmployeesGetEmployeeResponse.builder()
-                .employee(ApiV1EmployeeEntity.builder()
+                .employee(ApiV1EmployeeEntityResponse.builder()
                 .name(employee.getName())
                         .department(employee.getDepartment())
                         .employeeId(employee.getId())

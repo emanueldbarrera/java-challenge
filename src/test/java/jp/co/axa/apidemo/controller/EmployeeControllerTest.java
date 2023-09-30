@@ -56,11 +56,17 @@ class EmployeeControllerTest {
         employees.add(employee1);
         employees.add(employee2);
         when(employeeService.getEmployees()).thenReturn(employees);
-
         when(employeeService.saveEmployee(any(ApiV1EmployeesSaveEmployeeRequest.class)))
                 .thenReturn(employee1);
         when(employeeService.deleteEmployee((any(ApiV1EmployeesDeleteEmployeeRequest.class))))
                 .thenReturn(employee1);
+        when(employeeService.updateEmployee((any(ApiV1EmployeesUpdateEmployeeRequest.class))))
+                .thenReturn(Employee.builder()
+                        .id(1L)
+                        .name("Different Name")
+                        .department("Different Department")
+                        .salary(6000)
+                        .build());
     }
 
     /**
@@ -71,6 +77,8 @@ class EmployeeControllerTest {
         final ApiV1EmployeesGetEmployeesResponse response = employeeController.getEmployees();
 
         assertThat(response.getResultType(), is(ResultType.SUCCESS.getCode()));
+        assertThat(response.getErrorCode(), is(nullValue()));
+        assertThat(response.getErrorMessage(), is(nullValue()));
         assertThat(response.getEmployees().size(), is(2));
         assertThat(response.getEmployees().get(0).getEmployeeId(), is(1L));
         assertThat(response.getEmployees().get(0).getName(), is("Some Name"));
@@ -92,6 +100,8 @@ class EmployeeControllerTest {
         final ApiV1EmployeesGetEmployeesResponse response = employeeController.getEmployees();
 
         assertThat(response.getResultType(), is(ResultType.SUCCESS.getCode()));
+        assertThat(response.getErrorCode(), is(nullValue()));
+        assertThat(response.getErrorMessage(), is(nullValue()));
         assertThat(response.getEmployees().size(), is(0));
     }
 
@@ -133,17 +143,11 @@ class EmployeeControllerTest {
      */
     @Test
     void test_getEmployee_invalid_employeeId() {
-        final ApiV1EmployeesGetEmployeeResponse responseNegative = employeeController.getEmployee(-1L);
-        assertThat(responseNegative.getResultType(), is(ResultType.FAILURE.getCode()));
-        assertThat(responseNegative.getErrorCode(), is(ErrorCode.INVALID_REQUEST_PARAMETER.getCode()));
-        assertThat(responseNegative.getErrorMessage(), is("Invalid request parameter"));
-        assertThat(responseNegative.getEmployee(), is(nullValue()));
-
-        final ApiV1EmployeesGetEmployeeResponse responseZero = employeeController.getEmployee(0L);
-        assertThat(responseZero.getResultType(), is(ResultType.FAILURE.getCode()));
-        assertThat(responseZero.getErrorCode(), is(ErrorCode.INVALID_REQUEST_PARAMETER.getCode()));
-        assertThat(responseZero.getErrorMessage(), is("Invalid request parameter"));
-        assertThat(responseNegative.getEmployee(), is(nullValue()));
+        final ApiV1EmployeesGetEmployeeResponse response = employeeController.getEmployee(-1L);
+        assertThat(response.getResultType(), is(ResultType.FAILURE.getCode()));
+        assertThat(response.getErrorCode(), is(ErrorCode.INVALID_REQUEST_PARAMETER.getCode()));
+        assertThat(response.getErrorMessage(), is("Invalid request parameter"));
+        assertThat(response.getEmployee(), is(nullValue()));
     }
 
     /**
@@ -216,33 +220,18 @@ class EmployeeControllerTest {
     }
 
     /**
-     * saveEmployees - Failure case - invalid name
+     * saveEmployees - Failure case - invalid name (min length)
      */
     @Test
-    void test_saveEmployees_failure_name_invalid() throws ApiBusinessException {
+    void test_saveEmployees_failure_invalid_name_min() throws ApiBusinessException {
         // Test name length less than minimum
-        ApiV1EmployeesSaveEmployeeRequest request = ApiV1EmployeesSaveEmployeeRequest.builder()
+        final ApiV1EmployeesSaveEmployeeRequest request = ApiV1EmployeesSaveEmployeeRequest.builder()
                 .name("A")
                 .department("Other Department")
                 .salary(4500)
                 .build();
 
-        ApiV1EmployeesSaveEmployeeResponse response = employeeController.saveEmployee(request);
-
-        assertThat(response.getResultType(), is(ResultType.FAILURE.getCode()));
-        assertThat(response.getErrorCode(), is(ErrorCode.INVALID_REQUEST_PARAMETER.getCode()));
-        assertThat(response.getErrorMessage(), is("Invalid request parameter"));
-        assertThat(response.getEmployee(), is(nullValue()));
-        verify(employeeService, times(0)).saveEmployee(request);
-
-        // Test name length greater than maximum
-        request = ApiV1EmployeesSaveEmployeeRequest.builder()
-                .name("123456789012345678901234567890123456789012345678901234567890123456789012345678901") // 81 characters
-                .department("Other Department")
-                .salary(4500)
-                .build();
-
-        response = employeeController.saveEmployee(request);
+        final ApiV1EmployeesSaveEmployeeResponse response = employeeController.saveEmployee(request);
 
         assertThat(response.getResultType(), is(ResultType.FAILURE.getCode()));
         assertThat(response.getErrorCode(), is(ErrorCode.INVALID_REQUEST_PARAMETER.getCode()));
@@ -252,33 +241,60 @@ class EmployeeControllerTest {
     }
 
     /**
-     * saveEmployees - Failure case - invalid department
+     * saveEmployees - Failure case - invalid name (max length)
      */
     @Test
-    void test_saveEmployees_failure_department_invalid() throws ApiBusinessException {
-        // Test department length less than minimum
-        ApiV1EmployeesSaveEmployeeRequest request = ApiV1EmployeesSaveEmployeeRequest.builder()
-                .name("Other Name")
-                .department("A")
+    void test_saveEmployees_failure_invalid_name_max() throws ApiBusinessException {
+        // Test name length less than minimum
+        final ApiV1EmployeesSaveEmployeeRequest request = ApiV1EmployeesSaveEmployeeRequest.builder()
+                .name("123456789012345678901234567890123456789012345678901234567890123456789012345678901") // 81 characters
+                .department("Other Department")
                 .salary(4500)
                 .build();
 
-        ApiV1EmployeesSaveEmployeeResponse response = employeeController.saveEmployee(request);
+        final ApiV1EmployeesSaveEmployeeResponse response = employeeController.saveEmployee(request);
 
         assertThat(response.getResultType(), is(ResultType.FAILURE.getCode()));
         assertThat(response.getErrorCode(), is(ErrorCode.INVALID_REQUEST_PARAMETER.getCode()));
         assertThat(response.getErrorMessage(), is("Invalid request parameter"));
         assertThat(response.getEmployee(), is(nullValue()));
         verify(employeeService, times(0)).saveEmployee(request);
+    }
 
-        // Test department length greater than maximum
-        request = ApiV1EmployeesSaveEmployeeRequest.builder()
+    /**
+     * saveEmployees - Failure case - invalid department (min length)
+     */
+    @Test
+    void test_saveEmployees_failure_invalid_department_min() throws ApiBusinessException {
+        // Test department length less than minimum
+        final ApiV1EmployeesSaveEmployeeRequest request = ApiV1EmployeesSaveEmployeeRequest.builder()
                 .name("Other Name")
-                .department("123456789012345678901234567890123456789012345678901234567890123456789012345678901") // 81 characters
+                .department("A")
                 .salary(4500)
                 .build();
 
-        response = employeeController.saveEmployee(request);
+        final ApiV1EmployeesSaveEmployeeResponse response = employeeController.saveEmployee(request);
+
+        assertThat(response.getResultType(), is(ResultType.FAILURE.getCode()));
+        assertThat(response.getErrorCode(), is(ErrorCode.INVALID_REQUEST_PARAMETER.getCode()));
+        assertThat(response.getErrorMessage(), is("Invalid request parameter"));
+        assertThat(response.getEmployee(), is(nullValue()));
+        verify(employeeService, times(0)).saveEmployee(request);
+    }
+
+    /**
+     * saveEmployees - Failure case - invalid department (max length)
+     */
+    @Test
+    void test_saveEmployees_failure_invalid_department_max() throws ApiBusinessException {
+        // Test department length less than minimum
+        final ApiV1EmployeesSaveEmployeeRequest request = ApiV1EmployeesSaveEmployeeRequest.builder()
+                .name("Other Name")
+                .department("123456789012345678901234567890123456789012345678901234567890123456789012345678901")
+                .salary(4500)
+                .build();
+
+        final ApiV1EmployeesSaveEmployeeResponse response = employeeController.saveEmployee(request);
 
         assertThat(response.getResultType(), is(ResultType.FAILURE.getCode()));
         assertThat(response.getErrorCode(), is(ErrorCode.INVALID_REQUEST_PARAMETER.getCode()));
@@ -449,48 +465,227 @@ class EmployeeControllerTest {
      * updateEmployee - Success case
      */
     @Test
-    void test_updateEmployee_success() {
-        final Employee employee = new Employee();
-        employee.setName("Different Name");
-        employee.setDepartment("Different Department");
-        employee.setSalary(6000);
+    void test_updateEmployee_success() throws ApiBusinessException {
+        final ApiV1EmployeesUpdateEmployeeRequest request = ApiV1EmployeesUpdateEmployeeRequest.builder()
+                .name("Different Name")
+                .department("Different Department")
+                .salary(6000)
+                .build();
 
-        employeeController.updateEmployee(employee, 2L);
+        ApiV1EmployeesUpdateEmployeeResponse response = employeeController.updateEmployee(request, 1L);
 
-        verify(employeeService, times(1)).updateEmployee(employee);
+        assertThat(response.getResultType(), is(ResultType.SUCCESS.getCode()));
+        assertThat(response.getEmployee(), is(notNullValue()));
+        assertThat(response.getEmployee().getEmployeeId(), is(1L));
+        assertThat(response.getEmployee().getName(), is("Different Name"));
+        assertThat(response.getEmployee().getDepartment(), is("Different Department"));
+        assertThat(response.getEmployee().getSalary(), is(6000));
+        verify(employeeService, times(1)).updateEmployee(any(ApiV1EmployeesUpdateEmployeeRequest.class));
     }
 
     /**
-     * updateEmployee - Failure case - employeeId is invalid
+     * updateEmployee - Failure case - invalid employeeId
      */
     @Test
-    void test_updateEmployee_invalid_employeeId() throws ApiBusinessException {
-        final Employee employee = new Employee();
-        employee.setName("Different Name");
-        employee.setDepartment("Different Department");
-        employee.setSalary(6000);
+    void test_updateEmployee_failure_invalid_employeeId() throws ApiBusinessException {
+        final ApiV1EmployeesUpdateEmployeeRequest request = ApiV1EmployeesUpdateEmployeeRequest.builder()
+                .name("Different Name")
+                .department("Different Department")
+                .salary(6000)
+                .build();
 
-        doThrow(new ApiBusinessException("anyPlaceCode", ErrorCode.SYSTEM_ERROR, "anyErrorMessage"))
-                .when(employeeService).getEmployee(any(ApiV1EmployeesGetEmployeeRequest.class));
-        employeeController.updateEmployee(employee, -1L);
+        ApiV1EmployeesUpdateEmployeeResponse response = employeeController.updateEmployee(request, -1L);
 
-        verify(employeeService, times(0)).updateEmployee(employee);
+        assertThat(response.getResultType(), is(ResultType.FAILURE.getCode()));
+        assertThat(response.getErrorCode(), is(ErrorCode.INVALID_REQUEST_PARAMETER.getCode()));
+        assertThat(response.getErrorMessage(), is("Invalid request parameter"));
+        assertThat(response.getEmployee(), is(nullValue()));
+        verify(employeeService, times(0)).updateEmployee(any(ApiV1EmployeesUpdateEmployeeRequest.class));
     }
 
     /**
-     * updateEmployee - Failure case - employeeId is not found by the service
+     * updateEmployee - Failure case - invalid name (min length)
      */
     @Test
-    void test_updateEmployee_nonexistent_employeeId() throws ApiBusinessException {
-        final Employee employee = new Employee();
-        employee.setName("Different Name");
-        employee.setDepartment("Different Department");
-        employee.setSalary(6000);
+    void test_updateEmployee_failure_invalid_name_min() throws ApiBusinessException {
+        final ApiV1EmployeesUpdateEmployeeRequest request = ApiV1EmployeesUpdateEmployeeRequest.builder()
+                .name("A")
+                .department("Different Department")
+                .salary(6000)
+                .build();
 
-        doThrow(new ApiBusinessException("anyPlaceCode", ErrorCode.NOT_FOUND, "anyErrorMessage"))
-                .when(employeeService).getEmployee(any(ApiV1EmployeesGetEmployeeRequest.class));
-        employeeController.updateEmployee(employee, -1L);
+        ApiV1EmployeesUpdateEmployeeResponse response = employeeController.updateEmployee(request, 1L);
 
-        verify(employeeService, times(0)).updateEmployee(employee);
+        assertThat(response.getResultType(), is(ResultType.FAILURE.getCode()));
+        assertThat(response.getErrorCode(), is(ErrorCode.INVALID_REQUEST_PARAMETER.getCode()));
+        assertThat(response.getErrorMessage(), is("Invalid request parameter"));
+        assertThat(response.getEmployee(), is(nullValue()));
+        verify(employeeService, times(0)).updateEmployee(any(ApiV1EmployeesUpdateEmployeeRequest.class));
+    }
+
+    /**
+     * updateEmployee - Failure case - invalid name (max length)
+     */
+    @Test
+    void test_updateEmployee_failure_invalid_name_max() throws ApiBusinessException {
+        final ApiV1EmployeesUpdateEmployeeRequest request = ApiV1EmployeesUpdateEmployeeRequest.builder()
+                .name("123456789012345678901234567890123456789012345678901234567890123456789012345678901") // 81 characters
+                .department("Different Department")
+                .salary(6000)
+                .build();
+
+        ApiV1EmployeesUpdateEmployeeResponse response = employeeController.updateEmployee(request, 1L);
+
+        assertThat(response.getResultType(), is(ResultType.FAILURE.getCode()));
+        assertThat(response.getErrorCode(), is(ErrorCode.INVALID_REQUEST_PARAMETER.getCode()));
+        assertThat(response.getErrorMessage(), is("Invalid request parameter"));
+        assertThat(response.getEmployee(), is(nullValue()));
+        verify(employeeService, times(0)).updateEmployee(any(ApiV1EmployeesUpdateEmployeeRequest.class));
+    }
+
+    /**
+     * updateEmployee - Failure case - invalid department (min length)
+     */
+    @Test
+    void test_updateEmployee_failure_invalid_department_min() throws ApiBusinessException {
+        final ApiV1EmployeesUpdateEmployeeRequest request = ApiV1EmployeesUpdateEmployeeRequest.builder()
+                .name("Different name")
+                .department("A")
+                .salary(6000)
+                .build();
+
+        ApiV1EmployeesUpdateEmployeeResponse response = employeeController.updateEmployee(request, 1L);
+
+        assertThat(response.getResultType(), is(ResultType.FAILURE.getCode()));
+        assertThat(response.getErrorCode(), is(ErrorCode.INVALID_REQUEST_PARAMETER.getCode()));
+        assertThat(response.getErrorMessage(), is("Invalid request parameter"));
+        assertThat(response.getEmployee(), is(nullValue()));
+        verify(employeeService, times(0)).updateEmployee(any(ApiV1EmployeesUpdateEmployeeRequest.class));
+    }
+
+    /**
+     * updateEmployee - Failure case - invalid department (max length)
+     */
+    @Test
+    void test_updateEmployee_failure_invalid_department_max() throws ApiBusinessException {
+        final ApiV1EmployeesUpdateEmployeeRequest request = ApiV1EmployeesUpdateEmployeeRequest.builder()
+                .name("Different name") // 81 characters
+                .department("123456789012345678901234567890123456789012345678901234567890123456789012345678901") // 81 characters
+                .salary(6000)
+                .build();
+
+        ApiV1EmployeesUpdateEmployeeResponse response = employeeController.updateEmployee(request, 1L);
+
+        assertThat(response.getResultType(), is(ResultType.FAILURE.getCode()));
+        assertThat(response.getErrorCode(), is(ErrorCode.INVALID_REQUEST_PARAMETER.getCode()));
+        assertThat(response.getErrorMessage(), is("Invalid request parameter"));
+        assertThat(response.getEmployee(), is(nullValue()));
+        verify(employeeService, times(0)).updateEmployee(any(ApiV1EmployeesUpdateEmployeeRequest.class));
+    }
+
+    /**
+     * updateEmployee - Failure case - invalid salary (zero)
+     */
+    @Test
+    void test_updateEmployee_failure_invalid_salary_zero() throws ApiBusinessException {
+        final ApiV1EmployeesUpdateEmployeeRequest request = ApiV1EmployeesUpdateEmployeeRequest.builder()
+                .name("Different name")
+                .department("Different Department")
+                .salary(0)
+                .build();
+
+        ApiV1EmployeesUpdateEmployeeResponse response = employeeController.updateEmployee(request, 1L);
+
+        assertThat(response.getResultType(), is(ResultType.FAILURE.getCode()));
+        assertThat(response.getErrorCode(), is(ErrorCode.INVALID_REQUEST_PARAMETER.getCode()));
+        assertThat(response.getErrorMessage(), is("Invalid request parameter"));
+        assertThat(response.getEmployee(), is(nullValue()));
+        verify(employeeService, times(0)).updateEmployee(any(ApiV1EmployeesUpdateEmployeeRequest.class));
+    }
+
+    /**
+     * updateEmployee - Failure case - invalid salary (negative)
+     */
+    @Test
+    void test_updateEmployee_failure_invalid_salary_negative() throws ApiBusinessException {
+        final ApiV1EmployeesUpdateEmployeeRequest request = ApiV1EmployeesUpdateEmployeeRequest.builder()
+                .name("Different name")
+                .department("Different Department")
+                .salary(-1)
+                .build();
+
+        ApiV1EmployeesUpdateEmployeeResponse response = employeeController.updateEmployee(request, 1L);
+
+        assertThat(response.getResultType(), is(ResultType.FAILURE.getCode()));
+        assertThat(response.getErrorCode(), is(ErrorCode.INVALID_REQUEST_PARAMETER.getCode()));
+        assertThat(response.getErrorMessage(), is("Invalid request parameter"));
+        assertThat(response.getEmployee(), is(nullValue()));
+        verify(employeeService, times(0)).updateEmployee(any(ApiV1EmployeesUpdateEmployeeRequest.class));
+    }
+
+    /**
+     * updateEmployee - Failure case - Not Found
+     */
+    @Test
+    void test_updateEmployee_failure_not_found() throws ApiBusinessException {
+        when(employeeService.updateEmployee((any(ApiV1EmployeesUpdateEmployeeRequest.class))))
+                .thenThrow(new ApiBusinessException("anyPlaceCode", ErrorCode.NOT_FOUND, "anyMessage"));
+        final ApiV1EmployeesUpdateEmployeeRequest request = ApiV1EmployeesUpdateEmployeeRequest.builder()
+                .name("Different Name") // 81 characters
+                .department("Different Department")
+                .salary(6000)
+                .build();
+
+        ApiV1EmployeesUpdateEmployeeResponse response = employeeController.updateEmployee(request, 5L);
+
+        assertThat(response.getResultType(), is(ResultType.FAILURE.getCode()));
+        assertThat(response.getErrorCode(), is(ErrorCode.NOT_FOUND.getCode()));
+        assertThat(response.getErrorMessage(), is("Employee not found"));
+        assertThat(response.getEmployee(), is(nullValue()));
+        verify(employeeService, times(1)).updateEmployee(any(ApiV1EmployeesUpdateEmployeeRequest.class));
+    }
+
+    /**
+     * updateEmployee - Failure case - ApiBusinessException
+     */
+    @Test
+    void test_updateEmployee_failure_ApiBusinessException() throws ApiBusinessException {
+        when(employeeService.updateEmployee((any(ApiV1EmployeesUpdateEmployeeRequest.class))))
+                .thenThrow(new ApiBusinessException("anyPlaceCode", ErrorCode.SYSTEM_ERROR, "anyMessage"));
+        final ApiV1EmployeesUpdateEmployeeRequest request = ApiV1EmployeesUpdateEmployeeRequest.builder()
+                .name("Different Name") // 81 characters
+                .department("Different Department")
+                .salary(6000)
+                .build();
+
+        ApiV1EmployeesUpdateEmployeeResponse response = employeeController.updateEmployee(request, 5L);
+
+        assertThat(response.getResultType(), is(ResultType.FAILURE.getCode()));
+        assertThat(response.getErrorCode(), is(ErrorCode.SYSTEM_ERROR.getCode()));
+        assertThat(response.getErrorMessage(), is("System error"));
+        assertThat(response.getEmployee(), is(nullValue()));
+        verify(employeeService, times(1)).updateEmployee(any(ApiV1EmployeesUpdateEmployeeRequest.class));
+    }
+
+    /**
+     * updateEmployee - Failure case - ApiBusinessException
+     */
+    @Test
+    void test_updateEmployee_failure_RuntimeException() throws ApiBusinessException {
+        when(employeeService.updateEmployee((any(ApiV1EmployeesUpdateEmployeeRequest.class))))
+                .thenThrow(RuntimeException.class);
+        final ApiV1EmployeesUpdateEmployeeRequest request = ApiV1EmployeesUpdateEmployeeRequest.builder()
+                .name("Different Name") // 81 characters
+                .department("Different Department")
+                .salary(6000)
+                .build();
+
+        ApiV1EmployeesUpdateEmployeeResponse response = employeeController.updateEmployee(request, 5L);
+
+        assertThat(response.getResultType(), is(ResultType.FAILURE.getCode()));
+        assertThat(response.getErrorCode(), is(ErrorCode.UNKNOWN.getCode()));
+        assertThat(response.getErrorMessage(), is("Unknown error"));
+        assertThat(response.getEmployee(), is(nullValue()));
+        verify(employeeService, times(1)).updateEmployee(any(ApiV1EmployeesUpdateEmployeeRequest.class));
     }
 }

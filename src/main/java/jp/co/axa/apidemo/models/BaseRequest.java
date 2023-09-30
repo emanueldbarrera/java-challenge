@@ -11,7 +11,7 @@ import javax.validation.Validator;
 import java.util.Set;
 
 @Getter
-@SuperBuilder
+@SuperBuilder(toBuilder = true)
 @NoArgsConstructor
 public abstract class BaseRequest {
 

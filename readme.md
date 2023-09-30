@@ -6,7 +6,7 @@
 - Fixed some bugs I found during manual testing
 - Added unit tests with junit5, so that I could code using TDD
 
-- Added DTO objects for request and responses
+- Added DTO objects for requests and responses
 - Added parameters validations
 - Added custom exceptions
 

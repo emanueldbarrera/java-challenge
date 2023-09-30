@@ -4,14 +4,14 @@ import jp.co.axa.apidemo.common.ErrorCode;
 import jp.co.axa.apidemo.common.ResultType;
 import jp.co.axa.apidemo.entities.Employee;
 import jp.co.axa.apidemo.models.ApiV1EmployeeEntityResponse;
-import jp.co.axa.apidemo.models.ApiV1EmployeesDeleteEmployeeResponse;
+import jp.co.axa.apidemo.models.ApiV1EmployeesUpdateEmployeeResponse;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class ApiV1EmployeesDeleteEmployeeResponseUtil {
-    public static ApiV1EmployeesDeleteEmployeeResponse buildResponseSuccess(final Employee employee) {
-        return ApiV1EmployeesDeleteEmployeeResponse.builder()
+public class ApiV1EmployeesUpdateEmployeeResponseUtil {
+    public static ApiV1EmployeesUpdateEmployeeResponse buildResponseSuccess(final Employee employee) {
+        return ApiV1EmployeesUpdateEmployeeResponse.builder()
                 .employee(ApiV1EmployeeEntityResponse.builder()
                         .employeeId(employee.getId())
                         .name(employee.getName())
@@ -22,8 +22,8 @@ public class ApiV1EmployeesDeleteEmployeeResponseUtil {
                 .build();
     }
 
-    public static ApiV1EmployeesDeleteEmployeeResponse buildResponseFailure(final ErrorCode errorCode, final String errorMessage) {
-        return ApiV1EmployeesDeleteEmployeeResponse.builder()
+    public static ApiV1EmployeesUpdateEmployeeResponse buildResponseFailure(final ErrorCode errorCode, final String errorMessage) {
+        return ApiV1EmployeesUpdateEmployeeResponse.builder()
                 .resultType(ResultType.FAILURE.getCode())
                 .errorCode(errorCode.getCode())
                 .errorMessage(errorMessage)

@@ -5,10 +5,7 @@ import jp.co.axa.apidemo.common.ErrorCode;
 import jp.co.axa.apidemo.entities.Employee;
 import jp.co.axa.apidemo.models.*;
 import jp.co.axa.apidemo.services.EmployeeService;
-import jp.co.axa.apidemo.util.ApiV1EmployeesDeleteEmployeeResponseUtil;
-import jp.co.axa.apidemo.util.ApiV1EmployeesGetEmployeeResponseUtil;
-import jp.co.axa.apidemo.util.ApiV1EmployeesGetEmployeesResponseUtil;
-import jp.co.axa.apidemo.util.ApiV1EmployeesSaveEmployeeResponseUtil;
+import jp.co.axa.apidemo.util.*;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -106,25 +103,29 @@ public class EmployeeController {
     }
 
     @PutMapping("/employees/{employeeId}")
-    public void updateEmployee(@RequestBody Employee employee,
-                               @PathVariable(name = "employeeId") Long employeeId) {
+    public ApiV1EmployeesUpdateEmployeeResponse updateEmployee(@RequestBody ApiV1EmployeesUpdateEmployeeRequest request,
+                                                               @PathVariable(name = "employeeId") Long employeeId) {
         try {
-            final ApiV1EmployeesGetEmployeeRequest request = ApiV1EmployeesGetEmployeeRequest.builder()
-                    .employeeId(employeeId)
-                    .build();
-            request.validate();
-            final Employee emp = employeeService.getEmployee(request);
-            if (emp != null) {
-                employee.setId(employeeId);
-                employeeService.updateEmployee(employee);
-            }
+            // Validate fields to update
+            final ApiV1EmployeesUpdateEmployeeRequest updatedRequest = request.toBuilder().employeeId(employeeId).build();
+            updatedRequest.validate();
+            // Update Employee entity
+            final Employee employee = employeeService.updateEmployee(updatedRequest);
+            return ApiV1EmployeesUpdateEmployeeResponseUtil.buildResponseSuccess(employee);
+        } catch (ConstraintViolationException e) {
+            log.info("Validation error: " + e.getMessage());
+            return ApiV1EmployeesUpdateEmployeeResponseUtil.buildResponseFailure(ErrorCode.INVALID_REQUEST_PARAMETER, "Invalid request parameter");
         } catch (ApiBusinessException e) {
             if (e.getErrorCode().equals(ErrorCode.NOT_FOUND)) {
-                log.info("Employee Not Found");
+                log.info("Employee not found; id: " + employeeId);
+                return ApiV1EmployeesUpdateEmployeeResponseUtil.buildResponseFailure(e.getErrorCode(), "Employee not found");
             } else {
-                log.warn("System error");
+                log.warn("System error", e.getMessage());
+                return ApiV1EmployeesUpdateEmployeeResponseUtil.buildResponseFailure(ErrorCode.SYSTEM_ERROR, "System error");
             }
+        } catch (Exception e) {
+            log.warn("Unknown exception: " + e.getMessage());
+            return ApiV1EmployeesUpdateEmployeeResponseUtil.buildResponseFailure(ErrorCode.UNKNOWN, "Unknown error");
         }
     }
-
 }

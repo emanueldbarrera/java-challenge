@@ -3,7 +3,7 @@ package jp.co.axa.apidemo.util;
 import jp.co.axa.apidemo.common.ErrorCode;
 import jp.co.axa.apidemo.common.ResultType;
 import jp.co.axa.apidemo.entities.Employee;
-import jp.co.axa.apidemo.models.ApiV1EmployeeEntity;
+import jp.co.axa.apidemo.models.ApiV1EmployeeEntityResponse;
 import jp.co.axa.apidemo.models.ApiV1EmployeesGetEmployeesResponse;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -14,9 +14,9 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ApiV1EmployeesGetEmployeesResponseUtil {
     public static ApiV1EmployeesGetEmployeesResponse buildResponseSuccess(final List<Employee> employees) {
-        final List<ApiV1EmployeeEntity> employeesResponses = new ArrayList<>();
+        final List<ApiV1EmployeeEntityResponse> employeesResponses = new ArrayList<>();
         for (Employee employee : employees) {
-            employeesResponses.add(ApiV1EmployeeEntity.builder()
+            employeesResponses.add(ApiV1EmployeeEntityResponse.builder()
                     .employeeId(employee.getId())
                     .name(employee.getName())
                     .department(employee.getDepartment())
