@@ -7,6 +7,9 @@ import lombok.experimental.SuperBuilder;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 
+/**
+ * Request DTO for GET api/v1/employees/:employeeId
+ */
 @Getter
 @SuperBuilder
 @NoArgsConstructor

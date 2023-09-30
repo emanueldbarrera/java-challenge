@@ -6,6 +6,7 @@ import jp.co.axa.apidemo.common.ResultType;
 import jp.co.axa.apidemo.controllers.EmployeeController;
 import jp.co.axa.apidemo.entities.Employee;
 import jp.co.axa.apidemo.models.ApiV1EmployeesGetEmployeeResponse;
+import jp.co.axa.apidemo.models.ApiV1EmployeesGetEmployeesResponse;
 import jp.co.axa.apidemo.services.EmployeeService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -53,7 +54,7 @@ class EmployeeControllerTest {
         List<Employee> employees = new java.util.ArrayList<>();
         employees.add(employee1);
         employees.add(employee2);
-        when(employeeService.retrieveEmployees()).thenReturn(employees);
+        when(employeeService.getEmployees()).thenReturn(employees);
 
         when(employeeService.getEmployee(any(Long.class)))
                 .thenThrow(new ApiBusinessException("anyPlaceCode", ErrorCode.NOT_FOUND, "anyMessage"));
@@ -68,17 +69,18 @@ class EmployeeControllerTest {
      */
     @Test
     void test_getEmployees_success() {
-        final List<Employee> employees = employeeController.getEmployees();
+        final ApiV1EmployeesGetEmployeesResponse employeesResponse = employeeController.getEmployees();
 
-        assertThat(employees.size(), is(2));
-        assertThat(employees.get(0).getId(), is(1L));
-        assertThat(employees.get(0).getName(), is("Some Name"));
-        assertThat(employees.get(0).getDepartment(), is("Some Department"));
-        assertThat(employees.get(0).getSalary(), is(3000));
-        assertThat(employees.get(1).getId(), is(2L));
-        assertThat(employees.get(1).getName(), is("Other Name"));
-        assertThat(employees.get(1).getDepartment(), is("Other Department"));
-        assertThat(employees.get(1).getSalary(), is(4500));
+        assertThat(employeesResponse.getResultType(), is(ResultType.SUCCESS.getCode()));
+        assertThat(employeesResponse.getEmployees().size(), is(2));
+        assertThat(employeesResponse.getEmployees().get(0).getEmployeeId(), is(1L));
+        assertThat(employeesResponse.getEmployees().get(0).getName(), is("Some Name"));
+        assertThat(employeesResponse.getEmployees().get(0).getDepartment(), is("Some Department"));
+        assertThat(employeesResponse.getEmployees().get(0).getSalary(), is(3000));
+        assertThat(employeesResponse.getEmployees().get(1).getEmployeeId(), is(2L));
+        assertThat(employeesResponse.getEmployees().get(1).getName(), is("Other Name"));
+        assertThat(employeesResponse.getEmployees().get(1).getDepartment(), is("Other Department"));
+        assertThat(employeesResponse.getEmployees().get(1).getSalary(), is(4500));
     }
 
     /**
@@ -86,11 +88,27 @@ class EmployeeControllerTest {
      */
     @Test
     void test_getEmployees_success_empty_db() {
-        when(employeeService.retrieveEmployees()).thenReturn(new ArrayList<>());
+        when(employeeService.getEmployees()).thenReturn(new ArrayList<>());
 
-        final List<Employee> employees = employeeController.getEmployees();
+        final ApiV1EmployeesGetEmployeesResponse employeesResponse = employeeController.getEmployees();
 
-        assertThat(employees.size(), is(0));
+        assertThat(employeesResponse.getResultType(), is(ResultType.SUCCESS.getCode()));
+        assertThat(employeesResponse.getEmployees().size(), is(0));
+    }
+
+    /**
+     * getEmployees - Success case - service throws general exception
+     */
+    @Test
+    void test_getEmployees_success_RuntimeException() {
+        doThrow(RuntimeException.class).when(employeeService).getEmployees();
+
+        final ApiV1EmployeesGetEmployeesResponse employeesResponse = employeeController.getEmployees();
+
+        assertThat(employeesResponse.getResultType(), is(ResultType.FAILURE.getCode()));
+        assertThat(employeesResponse.getErrorCode(), is(ErrorCode.UNKNOWN.getCode()));
+        assertThat(employeesResponse.getErrorMessage(), is("Unknown error"));
+        assertThat(employeesResponse.getEmployees(), is(nullValue()));
     }
 
     /**
@@ -148,7 +166,7 @@ class EmployeeControllerTest {
     }
 
     /**
-     * getEmployee - Failure case - ApiBusinessException
+     * getEmployee - Failure case - service throws ApiBusinessException
      */
     @Test
     void test_getEmployee_ApiBusinessException() throws ApiBusinessException {
@@ -160,6 +178,24 @@ class EmployeeControllerTest {
         assertThat(employeeResponse.getResultType(), is(ResultType.FAILURE.getCode()));
         assertThat(employeeResponse.getErrorCode(), is(ErrorCode.SYSTEM_ERROR.getCode()));
         assertThat(employeeResponse.getErrorMessage(), is("System error"));
+        assertThat(employeeResponse.getEmployeeId(), is(nullValue()));
+        assertThat(employeeResponse.getName(), is(nullValue()));
+        assertThat(employeeResponse.getDepartment(), is(nullValue()));
+        assertThat(employeeResponse.getSalary(), is(nullValue()));
+    }
+
+    /**
+     * getEmployee - Failure case - service throws general exception
+     */
+    @Test
+    void test_getEmployee_RuntimeException() throws ApiBusinessException {
+        doThrow(RuntimeException.class).when(employeeService).getEmployee(any(Long.class));
+
+        final ApiV1EmployeesGetEmployeeResponse employeeResponse = employeeController.getEmployee(1L);
+
+        assertThat(employeeResponse.getResultType(), is(ResultType.FAILURE.getCode()));
+        assertThat(employeeResponse.getErrorCode(), is(ErrorCode.UNKNOWN.getCode()));
+        assertThat(employeeResponse.getErrorMessage(), is("Unknown error"));
         assertThat(employeeResponse.getEmployeeId(), is(nullValue()));
         assertThat(employeeResponse.getName(), is(nullValue()));
         assertThat(employeeResponse.getDepartment(), is(nullValue()));

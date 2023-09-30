@@ -13,12 +13,12 @@ import java.util.Optional;
 
 @Service
 @AllArgsConstructor
-public class EmployeeServiceImpl implements EmployeeService{
+public class EmployeeServiceImpl implements EmployeeService {
 
     @Autowired
     private EmployeeRepository employeeRepository;
 
-    public List<Employee> retrieveEmployees() {
+    public List<Employee> getEmployees() {
         return employeeRepository.findAll();
     }
 
@@ -30,11 +30,11 @@ public class EmployeeServiceImpl implements EmployeeService{
         return optionalEmployee.get();
     }
 
-    public void saveEmployee(Employee employee){
+    public void saveEmployee(Employee employee) {
         employeeRepository.saveAndFlush(employee);
     }
 
-    public void deleteEmployee(Long employeeId){
+    public void deleteEmployee(Long employeeId) {
         employeeRepository.deleteById(employeeId);
     }
 

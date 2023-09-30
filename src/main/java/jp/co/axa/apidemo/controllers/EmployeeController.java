@@ -5,15 +5,16 @@ import jp.co.axa.apidemo.common.ErrorCode;
 import jp.co.axa.apidemo.entities.Employee;
 import jp.co.axa.apidemo.models.ApiV1EmployeesGetEmployeeRequest;
 import jp.co.axa.apidemo.models.ApiV1EmployeesGetEmployeeResponse;
+import jp.co.axa.apidemo.models.ApiV1EmployeesGetEmployeesResponse;
 import jp.co.axa.apidemo.services.EmployeeService;
 import jp.co.axa.apidemo.util.ApiV1EmployeesGetEmployeeResponseUtil;
+import jp.co.axa.apidemo.util.ApiV1EmployeesGetEmployeesResponseUtil;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.ConstraintViolationException;
-import java.util.List;
 
 @Log4j2
 @AllArgsConstructor
@@ -25,8 +26,13 @@ public class EmployeeController {
     private EmployeeService employeeService;
 
     @GetMapping("/employees")
-    public List<Employee> getEmployees() {
-        return employeeService.retrieveEmployees();
+    public ApiV1EmployeesGetEmployeesResponse getEmployees() {
+        try {
+            return ApiV1EmployeesGetEmployeesResponseUtil.buildResponseSuccess(employeeService.getEmployees());
+        } catch (Exception e) {
+            log.warn("Unknown exception: " + e.getMessage());
+            return ApiV1EmployeesGetEmployeesResponseUtil.buildResponseFailure(ErrorCode.UNKNOWN, "Unknown error");
+        }
     }
 
     @GetMapping("/employees/{employeeId}")
@@ -38,15 +44,18 @@ public class EmployeeController {
             return ApiV1EmployeesGetEmployeeResponseUtil.buildResponseSuccess(employee);
         } catch (ConstraintViolationException e) {
             log.info("Validation error: " + e.getMessage());
-            return ApiV1EmployeesGetEmployeeResponseUtil.buildResponseFailure(ErrorCode.INVALID_REQUEST_PARAMETER,"Invalid request parameter");
+            return ApiV1EmployeesGetEmployeeResponseUtil.buildResponseFailure(ErrorCode.INVALID_REQUEST_PARAMETER, "Invalid request parameter");
         } catch (ApiBusinessException e) {
             if (e.getErrorCode().equals(ErrorCode.NOT_FOUND)) {
                 log.info("Employee not found; id: " + employeeId);
-                return ApiV1EmployeesGetEmployeeResponseUtil.buildResponseFailure(e.getErrorCode(),"Employee not found");
+                return ApiV1EmployeesGetEmployeeResponseUtil.buildResponseFailure(e.getErrorCode(), "Employee not found");
             } else {
-                log.info("System error");
-                return ApiV1EmployeesGetEmployeeResponseUtil.buildResponseFailure(e.getErrorCode(),"System error");
+                log.warn("System error");
+                return ApiV1EmployeesGetEmployeeResponseUtil.buildResponseFailure(e.getErrorCode(), "System error");
             }
+        } catch (Exception e) {
+            log.warn("Unknown exception: " + e.getMessage());
+            return ApiV1EmployeesGetEmployeeResponseUtil.buildResponseFailure(ErrorCode.UNKNOWN, "Unknown error");
         }
     }
 

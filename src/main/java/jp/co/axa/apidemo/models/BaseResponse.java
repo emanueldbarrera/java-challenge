@@ -1,7 +1,6 @@
 package jp.co.axa.apidemo.models;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import jp.co.axa.apidemo.common.ResultType;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;

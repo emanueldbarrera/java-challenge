@@ -1,17 +1,14 @@
 package jp.co.axa.apidemo.models;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
 import org.springframework.lang.Nullable;
 
-/**
- * Response DTO for GET api/v1/employees/:employeeId
- */
 @Getter
-@SuperBuilder
-@NoArgsConstructor
-public class ApiV1EmployeesGetEmployeeResponse extends BaseResponse {
+@Builder
+@AllArgsConstructor
+public class ApiV1EmployeesGetEmployeesEntity {
     @Nullable
     private Long employeeId;
     @Nullable

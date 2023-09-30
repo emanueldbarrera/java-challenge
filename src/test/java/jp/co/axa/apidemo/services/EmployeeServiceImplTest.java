@@ -59,11 +59,11 @@ class EmployeeServiceImplTest {
     }
 
     /**
-     * retrieveEmployees - Success case
+     * getEmployees - Success case
      */
     @Test
-    void test_retrieveEmployees_success() {
-        final List<Employee> employees = employeeService.retrieveEmployees();
+    void test_getEmployees_success() {
+        final List<Employee> employees = employeeService.getEmployees();
 
         assertThat(employees.size(), is(2));
         assertThat(employees.get(0).getId(), is(1L));
@@ -77,13 +77,13 @@ class EmployeeServiceImplTest {
     }
 
     /**
-     * retrieveEmployees - Success case - empty database
+     * getEmployees - Success case - empty database
      */
     @Test
-    void test_retrieveEmployees_success_empty_db() {
+    void test_getEmployees_success_empty_db() {
         when(employeeRepository.findAll()).thenReturn(new ArrayList<>());
 
-        final List<Employee> employees = employeeService.retrieveEmployees();
+        final List<Employee> employees = employeeService.getEmployees();
 
         assertThat(employees.size(), is(0));
     }

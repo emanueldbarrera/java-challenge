@@ -7,13 +7,13 @@ import java.util.List;
 
 public interface EmployeeService {
 
-    public List<Employee> retrieveEmployees();
+    List<Employee> getEmployees();
 
-    public Employee getEmployee(Long employeeId) throws ApiBusinessException;
+    Employee getEmployee(Long employeeId) throws ApiBusinessException;
 
-    public void saveEmployee(Employee employee);
+    void saveEmployee(Employee employee);
 
-    public void deleteEmployee(Long employeeId);
+    void deleteEmployee(Long employeeId);
 
-    public void updateEmployee(Employee employee);
+    void updateEmployee(Employee employee);
 }
