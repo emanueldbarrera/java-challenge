@@ -5,6 +5,9 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+/**
+ * Custom error codes to be returned to the end user
+ */
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public enum ErrorCode {

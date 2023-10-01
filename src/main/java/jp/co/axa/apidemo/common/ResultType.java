@@ -5,6 +5,9 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+/**
+ * Possible results for API calls
+ */
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public enum ResultType {

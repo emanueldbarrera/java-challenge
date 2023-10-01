@@ -10,22 +10,20 @@
 - Added DTO objects for requests and responses
 - Added parameters validations
 - Added custom exceptions
-- Add pagination for GetEmployees
+- Add pagination for GetEmployees and GetDepartments
+- Used a logging library (log4j2) and improved logs
 
-- Included sonarqube for code analysis
-- Included a code coverage plugin for reports (jacoco)
-- Used a logging library (log4j2)
+- Included and configured sonarqube for code analysis, that helped me identify and fix issues
+- Included a code coverage plugin for reports (jacoco), that runs when doing `mvn verify`
 
 #### What I would like to improve
 
-- Add Spring Security
-- Improve javadoc and comments
-- Add integration tests
-- Add e2e tests
+- Add login (i.e with Spring Security)
+- Improve unit test coverage, an add integration tests
+- Add e2e/automation tests (i.e. using Karate)
 - Add cache for the database
-- Include versioning
+- Include versioning management
 - Include support for environments
-- Salary should accept decimal
 
 #### My experience in Java
 

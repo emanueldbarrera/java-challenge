@@ -10,6 +10,13 @@ import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ApiV1DepartmentsSaveDepartmentResponseUtil {
+
+    /**
+     * Maps a {@link Department} to the corresponding DTO object
+     *
+     * @param department an instance of {@link Department}
+     * @return {@link ApiV1DepartmentsSaveDepartmentResponse}
+     */
     public static ApiV1DepartmentsSaveDepartmentResponse buildResponseSuccess(final Department department) {
         return ApiV1DepartmentsSaveDepartmentResponse.builder()
                 .department(ApiV1DepartmentEntityResponse.builder()
@@ -20,6 +27,13 @@ public class ApiV1DepartmentsSaveDepartmentResponseUtil {
                 .build();
     }
 
+    /**
+     * Returns the corresponding response DTO object of an unsuccessful request
+     *
+     * @param errorCode
+     * @param errorMessage
+     * @return {@link ApiV1DepartmentsSaveDepartmentResponse}
+     */
     public static ApiV1DepartmentsSaveDepartmentResponse buildResponseFailure(final ErrorCode errorCode, final String errorMessage) {
         return ApiV1DepartmentsSaveDepartmentResponse.builder()
                 .resultType(ResultType.FAILURE.getCode())

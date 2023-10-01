@@ -6,6 +6,11 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.springframework.lang.Nullable;
 
+/**
+ * Base DTO class for all responses. It enforces the provision of resultType,
+ * and optionally of error information if the call result was unsuccessful
+ *
+ */
 @Getter
 @SuperBuilder
 @NoArgsConstructor

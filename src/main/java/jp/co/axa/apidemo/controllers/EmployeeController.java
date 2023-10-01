@@ -43,15 +43,17 @@ public class EmployeeController {
     @Autowired
     private EmployeeService employeeService;
 
+    /**
+     * Returns a list of a page of employees, ordered by id
+     *
+     * @param offset the starting position of the page
+     * @param limit  the size of the page
+     * @return {@link ApiV1EmployeesGetEmployeesResponse}
+     */
     @GetMapping("/employees")
-    public ApiV1EmployeesGetEmployeesResponse getEmployees(
-            @RequestParam Integer offset,
-            @RequestParam Integer limit) {
+    public ApiV1EmployeesGetEmployeesResponse getEmployees(@RequestParam Integer offset, @RequestParam Integer limit) {
         try {
-            final ApiV1EmployeesGetEmployeesRequest request = ApiV1EmployeesGetEmployeesRequest.builder()
-                    .limit(limit)
-                    .offset(offset)
-                    .build();
+            final ApiV1EmployeesGetEmployeesRequest request = ApiV1EmployeesGetEmployeesRequest.builder().limit(limit).offset(offset).build();
             request.validate();
             return ApiV1EmployeesGetEmployeesResponseUtil.buildResponseSuccess(employeeService.getEmployees(request));
         } catch (ConstraintViolationException e) {
@@ -63,6 +65,12 @@ public class EmployeeController {
         }
     }
 
+    /**
+     * Returns a single instance of a employee, if present
+     *
+     * @param employeeId the id of the target employee
+     * @return {@link ApiV1EmployeesGetEmployeeResponse}
+     */
     @GetMapping("/employees/{employeeId}")
     public ApiV1EmployeesGetEmployeeResponse getEmployee(@PathVariable(name = "employeeId") Long employeeId) {
         try {
@@ -75,10 +83,10 @@ public class EmployeeController {
             return ApiV1EmployeesGetEmployeeResponseUtil.buildResponseFailure(ErrorCode.INVALID_REQUEST_PARAMETER, "Invalid request parameter");
         } catch (ApiBusinessException e) {
             if (e.getErrorCode().equals(ErrorCode.NOT_FOUND)) {
-                log.info("Employee not found; id: " + employeeId);
+                log.info(e.getPlaceCode(), "Employee not found; id: " + employeeId);
                 return ApiV1EmployeesGetEmployeeResponseUtil.buildResponseFailure(e.getErrorCode(), "Employee not found");
             } else {
-                log.warn("System error");
+                log.warn(e.getPlaceCode(), "System error");
                 return ApiV1EmployeesGetEmployeeResponseUtil.buildResponseFailure(e.getErrorCode(), "System error");
             }
         } catch (Exception e) {
@@ -87,11 +95,17 @@ public class EmployeeController {
         }
     }
 
+    /**
+     * Creates a new employee to be stored in the database
+     *
+     * @param request {@link ApiV1EmployeesSaveEmployeeRequest} a wrapper with all the employee parameters
+     * @return {@Link ApiV1EmployeesSaveEmployeeResponse}
+     */
     @PostMapping("/employees")
-    public ApiV1EmployeesSaveEmployeeResponse saveEmployee(@RequestBody ApiV1EmployeesSaveEmployeeRequest employeeRequest) {
+    public ApiV1EmployeesSaveEmployeeResponse saveEmployee(@RequestBody ApiV1EmployeesSaveEmployeeRequest request) {
         try {
-            employeeRequest.validate();
-            final Employee employee = employeeService.saveEmployee(employeeRequest);
+            request.validate();
+            final Employee employee = employeeService.saveEmployee(request);
             log.info("Employee Saved Successfully; employeeId: " + employee.getId());
             return ApiV1EmployeesSaveEmployeeResponseUtil.buildResponseSuccess(employee);
         } catch (ConstraintViolationException e) {
@@ -99,10 +113,10 @@ public class EmployeeController {
             return ApiV1EmployeesSaveEmployeeResponseUtil.buildResponseFailure(ErrorCode.INVALID_REQUEST_PARAMETER, "Invalid request parameter");
         } catch (ApiBusinessException e) {
             if (e.getErrorCode().equals(ErrorCode.INVALID_REQUEST_PARAMETER)) {
-                log.info("Validation error: " + e.getMessage());
+                log.info(e.getPlaceCode(), "Validation error: " + e.getMessage());
                 return ApiV1EmployeesSaveEmployeeResponseUtil.buildResponseFailure(ErrorCode.INVALID_REQUEST_PARAMETER, "Invalid request parameter");
             }
-            log.warn("System error", e.getMessage());
+            log.warn(e.getPlaceCode(), "System error", e.getMessage());
             return ApiV1EmployeesSaveEmployeeResponseUtil.buildResponseFailure(ErrorCode.SYSTEM_ERROR, "System error");
         } catch (Exception e) {
             log.warn("Unknown exception: " + e.getMessage());
@@ -110,12 +124,16 @@ public class EmployeeController {
         }
     }
 
+    /**
+     * Deletes a employee, if exists
+     *
+     * @param employeeId The id of the employee to be deleted
+     * @return {@link ApiV1EmployeesDeleteEmployeeResponse}
+     */
     @DeleteMapping("/employees/{employeeId}")
     public ApiV1EmployeesDeleteEmployeeResponse deleteEmployee(@PathVariable(name = "employeeId") Long employeeId) {
         try {
-            ApiV1EmployeesDeleteEmployeeRequest request = ApiV1EmployeesDeleteEmployeeRequest.builder()
-                    .employeeId(employeeId)
-                    .build();
+            ApiV1EmployeesDeleteEmployeeRequest request = ApiV1EmployeesDeleteEmployeeRequest.builder().employeeId(employeeId).build();
             request.validate();
             final Employee employee = employeeService.deleteEmployee(request);
             log.info("Employee Deleted Successfully; employeeId: " + employeeId);
@@ -125,10 +143,10 @@ public class EmployeeController {
             return ApiV1EmployeesDeleteEmployeeResponseUtil.buildResponseFailure(ErrorCode.INVALID_REQUEST_PARAMETER, "Invalid request parameter");
         } catch (ApiBusinessException e) {
             if (e.getErrorCode().equals(ErrorCode.NOT_FOUND)) {
-                log.info("Employee not found; id: " + employeeId);
+                log.info(e.getPlaceCode(), "Employee not found; id: " + employeeId);
                 return ApiV1EmployeesDeleteEmployeeResponseUtil.buildResponseFailure(e.getErrorCode(), "Employee not found");
             } else {
-                log.warn("System error", e.getMessage());
+                log.warn(e.getPlaceCode(), "System error", e.getMessage());
                 return ApiV1EmployeesDeleteEmployeeResponseUtil.buildResponseFailure(ErrorCode.SYSTEM_ERROR, "System error");
             }
         } catch (Exception e) {
@@ -137,9 +155,15 @@ public class EmployeeController {
         }
     }
 
+    /**
+     * Updates one or more fields of the given employee
+     *
+     * @param request    {@link ApiV1EmployeesUpdateEmployeeRequest} a wrapper with all the employee parameters
+     * @param employeeId the id of the target employee to be updated
+     * @return {@link ApiV1EmployeesUpdateEmployeeResponse}
+     */
     @PutMapping("/employees/{employeeId}")
-    public ApiV1EmployeesUpdateEmployeeResponse updateEmployee(@RequestBody ApiV1EmployeesUpdateEmployeeRequest request,
-                                                               @PathVariable(name = "employeeId") Long employeeId) {
+    public ApiV1EmployeesUpdateEmployeeResponse updateEmployee(@RequestBody ApiV1EmployeesUpdateEmployeeRequest request, @PathVariable(name = "employeeId") Long employeeId) {
         try {
             // Validate fields to update
             final ApiV1EmployeesUpdateEmployeeRequest updatedRequest = request.toBuilder().employeeId(employeeId).build();
@@ -152,14 +176,14 @@ public class EmployeeController {
             return ApiV1EmployeesUpdateEmployeeResponseUtil.buildResponseFailure(ErrorCode.INVALID_REQUEST_PARAMETER, "Invalid request parameter");
         } catch (ApiBusinessException e) {
             if (e.getErrorCode().equals(ErrorCode.INVALID_REQUEST_PARAMETER)) {
-                log.info("Validation error: " + e.getMessage());
+                log.info(e.getPlaceCode(), "Validation error: " + e.getMessage());
                 return ApiV1EmployeesUpdateEmployeeResponseUtil.buildResponseFailure(ErrorCode.INVALID_REQUEST_PARAMETER, "Invalid request parameter");
             }
             if (e.getErrorCode().equals(ErrorCode.NOT_FOUND)) {
-                log.info("Employee not found; id: " + employeeId);
+                log.info(e.getPlaceCode(), "Employee not found; id: " + employeeId);
                 return ApiV1EmployeesUpdateEmployeeResponseUtil.buildResponseFailure(e.getErrorCode(), "Employee not found");
             } else {
-                log.warn("System error", e.getMessage());
+                log.warn(e.getPlaceCode(), "System error", e.getMessage());
                 return ApiV1EmployeesUpdateEmployeeResponseUtil.buildResponseFailure(ErrorCode.SYSTEM_ERROR, "System error");
             }
         } catch (Exception e) {

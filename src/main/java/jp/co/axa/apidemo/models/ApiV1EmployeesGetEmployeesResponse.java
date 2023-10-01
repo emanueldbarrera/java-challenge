@@ -7,7 +7,7 @@ import lombok.experimental.SuperBuilder;
 import java.util.List;
 
 /**
- * Response DTO for GET api/v1/employees/
+ * Response DTO for GET api/v1/employees
  */
 @Getter
 @SuperBuilder

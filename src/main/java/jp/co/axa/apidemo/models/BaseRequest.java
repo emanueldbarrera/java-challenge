@@ -10,11 +10,20 @@ import javax.validation.Validation;
 import javax.validation.Validator;
 import java.util.Set;
 
+/**
+ * Base DTO class for all requests. It provides of params validation
+ *
+ */
 @Getter
 @SuperBuilder(toBuilder = true)
 @NoArgsConstructor
 public abstract class BaseRequest {
 
+    /**
+     * Validates all the constraints configured for this object's attributes
+     *
+     * @throws ConstraintViolationException
+     */
     public void validate() throws ConstraintViolationException {
         Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
         if (validator != null) {

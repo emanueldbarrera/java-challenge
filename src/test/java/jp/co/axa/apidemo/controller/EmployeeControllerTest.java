@@ -29,10 +29,8 @@ class EmployeeControllerTest {
 
     @Mock
     private EmployeeService employeeService;
-
     @InjectMocks
     private EmployeeController employeeController;
-
     private Employee employee1;
 
     @BeforeEach

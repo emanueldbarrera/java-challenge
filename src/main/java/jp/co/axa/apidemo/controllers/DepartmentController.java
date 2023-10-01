@@ -33,6 +33,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.ConstraintViolationException;
+import java.util.List;
 
 @Log4j2
 @AllArgsConstructor
@@ -43,17 +44,20 @@ public class DepartmentController {
     @Autowired
     private DepartmentService departmentService;
 
+    /**
+     * Returns a list of a page of departments, ordered by id
+     *
+     * @param offset the starting position of the page
+     * @param limit  the size of the page
+     * @return {@link ApiV1DepartmentsGetDepartmentsResponse}
+     */
     @GetMapping("/departments")
-    public ApiV1DepartmentsGetDepartmentsResponse getDepartments(
-            @RequestParam Integer offset,
-            @RequestParam Integer limit) {
+    public ApiV1DepartmentsGetDepartmentsResponse getDepartments(@RequestParam Integer offset, @RequestParam Integer limit) {
         try {
-            final ApiV1DepartmentsGetDepartmentsRequest request = ApiV1DepartmentsGetDepartmentsRequest.builder()
-                    .limit(limit)
-                    .offset(offset)
-                    .build();
+            final ApiV1DepartmentsGetDepartmentsRequest request = ApiV1DepartmentsGetDepartmentsRequest.builder().limit(limit).offset(offset).build();
             request.validate();
-            return ApiV1DepartmentsGetDepartmentsResponseUtil.buildResponseSuccess(departmentService.getDepartments(request));
+            List<Department> departments = departmentService.getDepartments(request);
+            return ApiV1DepartmentsGetDepartmentsResponseUtil.buildResponseSuccess(departments);
         } catch (ConstraintViolationException e) {
             log.info("Validation error: " + e.getMessage());
             return ApiV1DepartmentsGetDepartmentsResponseUtil.buildResponseFailure(ErrorCode.INVALID_REQUEST_PARAMETER, "Invalid request parameter");
@@ -63,6 +67,12 @@ public class DepartmentController {
         }
     }
 
+    /**
+     * Returns a single instance of a department, if present
+     *
+     * @param departmentId the id of the target department
+     * @return {@link ApiV1DepartmentsGetDepartmentResponse}
+     */
     @GetMapping("/departments/{departmentId}")
     public ApiV1DepartmentsGetDepartmentResponse getDepartment(@PathVariable(name = "departmentId") Long departmentId) {
         try {
@@ -75,10 +85,10 @@ public class DepartmentController {
             return ApiV1DepartmentsGetDepartmentResponseUtil.buildResponseFailure(ErrorCode.INVALID_REQUEST_PARAMETER, "Invalid request parameter");
         } catch (ApiBusinessException e) {
             if (e.getErrorCode().equals(ErrorCode.NOT_FOUND)) {
-                log.info("Department not found; id: " + departmentId);
+                log.info(e.getPlaceCode(), "Department not found; id: " + departmentId);
                 return ApiV1DepartmentsGetDepartmentResponseUtil.buildResponseFailure(e.getErrorCode(), "Department not found");
             } else {
-                log.warn("System error");
+                log.warn(e.getPlaceCode(), "System error");
                 return ApiV1DepartmentsGetDepartmentResponseUtil.buildResponseFailure(e.getErrorCode(), "System error");
             }
         } catch (Exception e) {
@@ -87,18 +97,24 @@ public class DepartmentController {
         }
     }
 
+    /**
+     * Creates a new department to be stored in the database
+     *
+     * @param request {@link ApiV1DepartmentsSaveDepartmentRequest} a wrapper with all the department parameters
+     * @return {@Link ApiV1DepartmentsSaveDepartmentResponse}
+     */
     @PostMapping("/departments")
-    public ApiV1DepartmentsSaveDepartmentResponse saveDepartment(@RequestBody ApiV1DepartmentsSaveDepartmentRequest departmentRequest) {
+    public ApiV1DepartmentsSaveDepartmentResponse saveDepartment(@RequestBody ApiV1DepartmentsSaveDepartmentRequest request) {
         try {
-            departmentRequest.validate();
-            final Department department = departmentService.saveDepartment(departmentRequest);
+            request.validate();
+            final Department department = departmentService.saveDepartment(request);
             log.info("Department Saved Successfully; departmentId: " + department.getId());
             return ApiV1DepartmentsSaveDepartmentResponseUtil.buildResponseSuccess(department);
         } catch (ConstraintViolationException e) {
             log.info("Validation error: " + e.getMessage());
             return ApiV1DepartmentsSaveDepartmentResponseUtil.buildResponseFailure(ErrorCode.INVALID_REQUEST_PARAMETER, "Invalid request parameter");
         } catch (ApiBusinessException e) {
-            log.warn("System error", e.getMessage());
+            log.warn(e.getPlaceCode(), "System error", e.getMessage());
             return ApiV1DepartmentsSaveDepartmentResponseUtil.buildResponseFailure(ErrorCode.SYSTEM_ERROR, "System error");
         } catch (Exception e) {
             log.warn("Unknown exception: " + e.getMessage());
@@ -106,12 +122,16 @@ public class DepartmentController {
         }
     }
 
+    /**
+     * Deletes a department, if exists
+     *
+     * @param departmentId The id of the department to be deleted
+     * @return {@link ApiV1DepartmentsDeleteDepartmentResponse}
+     */
     @DeleteMapping("/departments/{departmentId}")
     public ApiV1DepartmentsDeleteDepartmentResponse deleteDepartment(@PathVariable(name = "departmentId") Long departmentId) {
         try {
-            ApiV1DepartmentsDeleteDepartmentRequest request = ApiV1DepartmentsDeleteDepartmentRequest.builder()
-                    .departmentId(departmentId)
-                    .build();
+            ApiV1DepartmentsDeleteDepartmentRequest request = ApiV1DepartmentsDeleteDepartmentRequest.builder().departmentId(departmentId).build();
             request.validate();
             final Department department = departmentService.deleteDepartment(request);
             log.info("Department Deleted Successfully; departmentId: " + departmentId);
@@ -121,10 +141,10 @@ public class DepartmentController {
             return ApiV1DepartmentsDeleteDepartmentResponseUtil.buildResponseFailure(ErrorCode.INVALID_REQUEST_PARAMETER, "Invalid request parameter");
         } catch (ApiBusinessException e) {
             if (e.getErrorCode().equals(ErrorCode.NOT_FOUND)) {
-                log.info("Department not found; id: " + departmentId);
+                log.info(e.getPlaceCode(), "Department not found; id: " + departmentId);
                 return ApiV1DepartmentsDeleteDepartmentResponseUtil.buildResponseFailure(e.getErrorCode(), "Department not found");
             } else {
-                log.warn("System error", e.getMessage());
+                log.warn(e.getPlaceCode(), "System error", e.getMessage());
                 return ApiV1DepartmentsDeleteDepartmentResponseUtil.buildResponseFailure(ErrorCode.SYSTEM_ERROR, "System error");
             }
         } catch (Exception e) {
@@ -133,6 +153,13 @@ public class DepartmentController {
         }
     }
 
+    /**
+     * Updates one or more fields of the given department
+     *
+     * @param request      {@link ApiV1DepartmentsUpdateDepartmentRequest} a wrapper with all the department parameters
+     * @param departmentId the id of the target department to be updated
+     * @return {@link ApiV1DepartmentsUpdateDepartmentResponse}
+     */
     @PutMapping("/departments/{departmentId}")
     public ApiV1DepartmentsUpdateDepartmentResponse updateDepartment(@RequestBody ApiV1DepartmentsUpdateDepartmentRequest request, @PathVariable(name = "departmentId") Long departmentId) {
         try {
@@ -141,20 +168,21 @@ public class DepartmentController {
             updatedRequest.validate();
             // Update Department entity
             final Department department = departmentService.updateDepartment(updatedRequest);
+            log.info("Department Updated Successfully; departmentId: " + departmentId);
             return ApiV1DepartmentsUpdateDepartmentResponseUtil.buildResponseSuccess(department);
         } catch (ConstraintViolationException e) {
             log.info("Validation error: " + e.getMessage());
             return ApiV1DepartmentsUpdateDepartmentResponseUtil.buildResponseFailure(ErrorCode.INVALID_REQUEST_PARAMETER, "Invalid request parameter");
         } catch (ApiBusinessException e) {
             if (e.getErrorCode().equals(ErrorCode.INVALID_REQUEST_PARAMETER)) {
-                log.info("Validation error: " + e.getMessage());
+                log.info(e.getPlaceCode(), "Validation error: " + e.getMessage());
                 return ApiV1DepartmentsUpdateDepartmentResponseUtil.buildResponseFailure(ErrorCode.INVALID_REQUEST_PARAMETER, "Invalid request parameter");
             }
             if (e.getErrorCode().equals(ErrorCode.NOT_FOUND)) {
-                log.info("Department not found; id: " + departmentId);
+                log.info(e.getPlaceCode(), "Department not found; id: " + departmentId);
                 return ApiV1DepartmentsUpdateDepartmentResponseUtil.buildResponseFailure(e.getErrorCode(), "Department not found");
             } else {
-                log.warn("System error", e.getMessage());
+                log.warn(e.getPlaceCode(), "System error", e.getMessage());
                 return ApiV1DepartmentsUpdateDepartmentResponseUtil.buildResponseFailure(ErrorCode.SYSTEM_ERROR, "System error");
             }
         } catch (Exception e) {
