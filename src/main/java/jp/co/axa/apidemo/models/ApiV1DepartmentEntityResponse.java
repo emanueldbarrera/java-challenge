@@ -8,13 +8,9 @@ import org.springframework.lang.Nullable;
 @Getter
 @Builder
 @AllArgsConstructor
-public class ApiV1EmployeeEntityResponse {
+public class ApiV1DepartmentEntityResponse {
     @Nullable
-    private Long employeeId;
+    private Long id;
     @Nullable
     private String name;
-    @Nullable
-    private ApiV1DepartmentEntityResponse department;
-    @Nullable
-    private Integer salary;
 }

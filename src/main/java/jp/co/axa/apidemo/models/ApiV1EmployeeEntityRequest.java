@@ -18,9 +18,8 @@ public abstract class ApiV1EmployeeEntityRequest extends BaseRequest {
     @Size(min = 2, max = 80)
     private String name;
     @NotNull
-    @NotBlank
-    @Size(min = 2, max = 80)
-    private String department;
+    @Positive
+    private Long departmentId;
     @NotNull
     @Positive
     private Integer salary;

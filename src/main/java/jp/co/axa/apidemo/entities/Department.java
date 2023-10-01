@@ -9,21 +9,18 @@ import lombok.Setter;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+
 @Entity
-@Table(name = "EMPLOYEE")
+@Table(name = "DEPARTMENT")
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Employee {
-
+public class Department {
     @Getter
     @Setter
     @Id
@@ -35,18 +32,4 @@ public class Employee {
     @Column(name = "NAME")
     @JsonProperty("name")
     private String name;
-
-    @Getter
-    @Setter
-    @Column(name = "SALARY")
-    @JsonProperty("salary")
-    private Integer salary;
-
-    @Getter
-    @Setter
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "DEPARTMENT_ID", nullable = false)
-    @JsonProperty("department_id")
-    private Department department;
-
 }

@@ -3,13 +3,32 @@ package jp.co.axa.apidemo.controllers;
 import jp.co.axa.apidemo.common.ApiBusinessException;
 import jp.co.axa.apidemo.common.ErrorCode;
 import jp.co.axa.apidemo.entities.Employee;
-import jp.co.axa.apidemo.models.*;
+import jp.co.axa.apidemo.models.ApiV1EmployeesDeleteEmployeeRequest;
+import jp.co.axa.apidemo.models.ApiV1EmployeesDeleteEmployeeResponse;
+import jp.co.axa.apidemo.models.ApiV1EmployeesGetEmployeeRequest;
+import jp.co.axa.apidemo.models.ApiV1EmployeesGetEmployeeResponse;
+import jp.co.axa.apidemo.models.ApiV1EmployeesGetEmployeesResponse;
+import jp.co.axa.apidemo.models.ApiV1EmployeesSaveEmployeeRequest;
+import jp.co.axa.apidemo.models.ApiV1EmployeesSaveEmployeeResponse;
+import jp.co.axa.apidemo.models.ApiV1EmployeesUpdateEmployeeRequest;
+import jp.co.axa.apidemo.models.ApiV1EmployeesUpdateEmployeeResponse;
 import jp.co.axa.apidemo.services.EmployeeService;
-import jp.co.axa.apidemo.util.*;
+import jp.co.axa.apidemo.util.ApiV1EmployeesDeleteEmployeeResponseUtil;
+import jp.co.axa.apidemo.util.ApiV1EmployeesGetEmployeeResponseUtil;
+import jp.co.axa.apidemo.util.ApiV1EmployeesGetEmployeesResponseUtil;
+import jp.co.axa.apidemo.util.ApiV1EmployeesSaveEmployeeResponseUtil;
+import jp.co.axa.apidemo.util.ApiV1EmployeesUpdateEmployeeResponseUtil;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.ConstraintViolationException;
 
@@ -67,6 +86,10 @@ public class EmployeeController {
             log.info("Validation error: " + e.getMessage());
             return ApiV1EmployeesSaveEmployeeResponseUtil.buildResponseFailure(ErrorCode.INVALID_REQUEST_PARAMETER, "Invalid request parameter");
         } catch (ApiBusinessException e) {
+            if (e.getErrorCode().equals(ErrorCode.INVALID_REQUEST_PARAMETER)) {
+                log.info("Validation error: " + e.getMessage());
+                return ApiV1EmployeesSaveEmployeeResponseUtil.buildResponseFailure(ErrorCode.INVALID_REQUEST_PARAMETER, "Invalid request parameter");
+            }
             log.warn("System error", e.getMessage());
             return ApiV1EmployeesSaveEmployeeResponseUtil.buildResponseFailure(ErrorCode.SYSTEM_ERROR, "System error");
         } catch (Exception e) {
@@ -116,6 +139,10 @@ public class EmployeeController {
             log.info("Validation error: " + e.getMessage());
             return ApiV1EmployeesUpdateEmployeeResponseUtil.buildResponseFailure(ErrorCode.INVALID_REQUEST_PARAMETER, "Invalid request parameter");
         } catch (ApiBusinessException e) {
+            if (e.getErrorCode().equals(ErrorCode.INVALID_REQUEST_PARAMETER)) {
+                log.info("Validation error: " + e.getMessage());
+                return ApiV1EmployeesUpdateEmployeeResponseUtil.buildResponseFailure(ErrorCode.INVALID_REQUEST_PARAMETER, "Invalid request parameter");
+            }
             if (e.getErrorCode().equals(ErrorCode.NOT_FOUND)) {
                 log.info("Employee not found; id: " + employeeId);
                 return ApiV1EmployeesUpdateEmployeeResponseUtil.buildResponseFailure(e.getErrorCode(), "Employee not found");

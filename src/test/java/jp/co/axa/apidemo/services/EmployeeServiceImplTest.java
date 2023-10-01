@@ -2,11 +2,13 @@ package jp.co.axa.apidemo.services;
 
 import jp.co.axa.apidemo.common.ApiBusinessException;
 import jp.co.axa.apidemo.common.ErrorCode;
+import jp.co.axa.apidemo.entities.Department;
 import jp.co.axa.apidemo.entities.Employee;
 import jp.co.axa.apidemo.models.ApiV1EmployeesDeleteEmployeeRequest;
 import jp.co.axa.apidemo.models.ApiV1EmployeesGetEmployeeRequest;
 import jp.co.axa.apidemo.models.ApiV1EmployeesSaveEmployeeRequest;
 import jp.co.axa.apidemo.models.ApiV1EmployeesUpdateEmployeeRequest;
+import jp.co.axa.apidemo.repositories.DepartmentRepository;
 import jp.co.axa.apidemo.repositories.EmployeeRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -33,24 +35,34 @@ class EmployeeServiceImplTest {
 
     @Mock
     private EmployeeRepository employeeRepository;
+    @Mock
+    private DepartmentRepository departmentRepository;
     @InjectMocks
     private EmployeeServiceImpl employeeService;
 
     @BeforeEach
     void init() {
         initMocks(this);
+        // Create test Department entities
+        Department department1 = new Department();
+        department1.setId(1L);
+        department1.setName("Some Department");
+
+        Department department2 = new Department();
+        department2.setId(2L);
+        department2.setName("Other Department");
 
         // Set test Employee entities
         final Employee employee1 = new Employee();
         employee1.setId(1L);
         employee1.setName("Some Name");
-        employee1.setDepartment("Some Department");
+        employee1.setDepartment(department1);
         employee1.setSalary(3000);
 
         final Employee employee2 = new Employee();
         employee2.setId(2L);
         employee2.setName("Other Name");
-        employee2.setDepartment("Other Department");
+        employee2.setDepartment(department2);
         employee2.setSalary(4500);
 
         List<Employee> employees = new java.util.ArrayList<>();
@@ -63,6 +75,10 @@ class EmployeeServiceImplTest {
         when(employeeRepository.findById(2L)).thenReturn(Optional.of(employee2));
 
         when(employeeRepository.saveAndFlush(any(Employee.class))).thenReturn(employee1);
+
+        when(departmentRepository.findById(any(Long.class))).thenReturn(Optional.empty());
+        when(departmentRepository.findById(1L)).thenReturn(Optional.of(department1));
+        when(departmentRepository.findById(2L)).thenReturn(Optional.of(department2));
     }
 
     /**
@@ -75,11 +91,12 @@ class EmployeeServiceImplTest {
         assertThat(employees.size(), is(2));
         assertThat(employees.get(0).getId(), is(1L));
         assertThat(employees.get(0).getName(), is("Some Name"));
-        assertThat(employees.get(0).getDepartment(), is("Some Department"));
+        assertThat(employees.get(0).getDepartment().getId(), is(1L));
+        assertThat(employees.get(0).getDepartment().getName(), is("Some Department"));
         assertThat(employees.get(0).getSalary(), is(3000));
         assertThat(employees.get(1).getId(), is(2L));
-        assertThat(employees.get(1).getName(), is("Other Name"));
-        assertThat(employees.get(1).getDepartment(), is("Other Department"));
+        assertThat(employees.get(1).getDepartment().getId(), is(2L));
+        assertThat(employees.get(1).getDepartment().getName(), is("Other Department"));
         assertThat(employees.get(1).getSalary(), is(4500));
     }
 
@@ -108,7 +125,8 @@ class EmployeeServiceImplTest {
         final Employee employee = employeeService.getEmployee(request);
 
         assertThat(employee.getId(), is(1L));
-        assertThat(employee.getDepartment(), is("Some Department"));
+        assertThat(employee.getDepartment().getId(), is(1L));
+        assertThat(employee.getDepartment().getName(), is("Some Department"));
         assertThat(employee.getName(), is("Some Name"));
         assertThat(employee.getSalary(), is(3000));
     }
@@ -128,13 +146,13 @@ class EmployeeServiceImplTest {
     }
 
     /**
-     * saveEmployees - Success case
+     * saveEmployee - Success case
      */
     @Test
-    void test_saveEmployees_success() throws ApiBusinessException {
+    void test_saveEmployee_success() throws ApiBusinessException {
         final ApiV1EmployeesSaveEmployeeRequest request = ApiV1EmployeesSaveEmployeeRequest.builder()
                 .name("Some Name")
-                .department("Some Department")
+                .departmentId(1L)
                 .salary(3000)
                 .build();
 
@@ -144,19 +162,38 @@ class EmployeeServiceImplTest {
         assertThat(employee, is(notNullValue()));
         assertThat(employee.getName(), is("Some Name"));
         assertThat(employee.getId(), is(1L));
-        assertThat(employee.getDepartment(), is("Some Department"));
+        assertThat(employee.getDepartment().getId(), is(1L));
+        assertThat(employee.getDepartment().getName(), is("Some Department"));
         assertThat(employee.getSalary(), is(3000));
     }
 
     /**
-     * saveEmployees - Failure case - database error
+     * saveEmployee - Failure case - department not found
      */
     @Test
-    void test_saveEmployees_failure_database_error() throws ApiBusinessException {
+    void test_saveEmployee_failure_nonexistent_department() throws ApiBusinessException {
+        when(departmentRepository.findById(1L)).thenReturn(Optional.empty());
+        final ApiV1EmployeesSaveEmployeeRequest request = ApiV1EmployeesSaveEmployeeRequest.builder()
+                .name("Some Name")
+                .departmentId(1L)
+                .salary(3000)
+                .build();
+
+        final ApiBusinessException apiBusinessException = assertThrows(ApiBusinessException.class,
+                () -> employeeService.saveEmployee(request));
+        assertThat(apiBusinessException.getErrorCode(), is(ErrorCode.INVALID_REQUEST_PARAMETER));
+        assertThat(apiBusinessException.getMessage(), is("Department not found"));
+    }
+
+    /**
+     * saveEmployee - Failure case - database error
+     */
+    @Test
+    void test_saveEmployee_failure_database_error() throws ApiBusinessException {
         when(employeeRepository.saveAndFlush(any(Employee.class))).thenThrow(RuntimeException.class);
         final ApiV1EmployeesSaveEmployeeRequest request = ApiV1EmployeesSaveEmployeeRequest.builder()
                 .name("Some Name")
-                .department("Some Department")
+                .departmentId(1L)
                 .salary(3000)
                 .build();
 
@@ -177,8 +214,8 @@ class EmployeeServiceImplTest {
         final Employee employee = employeeService.deleteEmployee(request);
 
         verify(employeeRepository, times(1)).deleteById(1L);
-        assertThat(employee.getId(), is(1L));
-        assertThat(employee.getDepartment(), is("Some Department"));
+        assertThat(employee.getDepartment().getId(), is(1L));
+        assertThat(employee.getDepartment().getName(), is("Some Department"));
         assertThat(employee.getName(), is("Some Name"));
         assertThat(employee.getSalary(), is(3000));
     }
@@ -242,7 +279,7 @@ class EmployeeServiceImplTest {
         final ApiV1EmployeesUpdateEmployeeRequest request = ApiV1EmployeesUpdateEmployeeRequest.builder()
                 .employeeId(1L)
                 .name("Different Name")
-                .department("Different Department")
+                .departmentId(2L)
                 .salary(4500)
                 .build();
 
@@ -260,7 +297,7 @@ class EmployeeServiceImplTest {
         final ApiV1EmployeesUpdateEmployeeRequest request = ApiV1EmployeesUpdateEmployeeRequest.builder()
                 .employeeId(1L)
                 .name("Different Name")
-                .department("Different Department")
+                .departmentId(2L)
                 .salary(4500)
                 .build();
 
@@ -268,6 +305,26 @@ class EmployeeServiceImplTest {
                 () -> employeeService.updateEmployee(request));
         assertThat(apiBusinessException.getErrorCode(), is(ErrorCode.NOT_FOUND));
         assertThat(apiBusinessException.getMessage(), is("Employee not found"));
+        verify(employeeRepository, times(0)).deleteById(1L);
+    }
+
+    /**
+     * updateEmployee - Failure case - department not found
+     */
+    @Test
+    void test_updateEmployee_failure_nonexistent_department() {
+        when(departmentRepository.findById(2L)).thenReturn(Optional.empty());
+        final ApiV1EmployeesUpdateEmployeeRequest request = ApiV1EmployeesUpdateEmployeeRequest.builder()
+                .employeeId(1L)
+                .name("Different Name")
+                .departmentId(2L)
+                .salary(4500)
+                .build();
+
+        final ApiBusinessException apiBusinessException = assertThrows(ApiBusinessException.class,
+                () -> employeeService.updateEmployee(request));
+        assertThat(apiBusinessException.getErrorCode(), is(ErrorCode.INVALID_REQUEST_PARAMETER));
+        assertThat(apiBusinessException.getMessage(), is("Department not found"));
         verify(employeeRepository, times(0)).deleteById(1L);
     }
 
@@ -280,7 +337,7 @@ class EmployeeServiceImplTest {
         final ApiV1EmployeesUpdateEmployeeRequest request = ApiV1EmployeesUpdateEmployeeRequest.builder()
                 .employeeId(1L)
                 .name("Different Name")
-                .department("Different Department")
+                .departmentId(2L)
                 .salary(4500)
                 .build();
 
@@ -300,7 +357,7 @@ class EmployeeServiceImplTest {
         final ApiV1EmployeesUpdateEmployeeRequest request = ApiV1EmployeesUpdateEmployeeRequest.builder()
                 .employeeId(1L)
                 .name("Different Name")
-                .department("Different Department")
+                .departmentId(2L)
                 .salary(4500)
                 .build();
 
