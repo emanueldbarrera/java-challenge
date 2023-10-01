@@ -6,12 +6,16 @@ import jp.co.axa.apidemo.entities.Department;
 import jp.co.axa.apidemo.entities.Employee;
 import jp.co.axa.apidemo.models.ApiV1EmployeesDeleteEmployeeRequest;
 import jp.co.axa.apidemo.models.ApiV1EmployeesGetEmployeeRequest;
+import jp.co.axa.apidemo.models.ApiV1EmployeesGetEmployeesRequest;
 import jp.co.axa.apidemo.models.ApiV1EmployeesSaveEmployeeRequest;
 import jp.co.axa.apidemo.models.ApiV1EmployeesUpdateEmployeeRequest;
 import jp.co.axa.apidemo.repositories.DepartmentRepository;
 import jp.co.axa.apidemo.repositories.EmployeeRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -26,8 +30,10 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Autowired
     private DepartmentRepository departmentRepository;
 
-    public List<Employee> getEmployees() {
-        return employeeRepository.findAll();
+    public List<Employee> getEmployees(ApiV1EmployeesGetEmployeesRequest request) {
+        Page<Employee> employeePage = employeeRepository.findAll(
+                PageRequest.of(request.getOffset(), request.getLimit(), Sort.by("id")));
+        return employeePage.getContent();
     }
 
     public Employee getEmployee(ApiV1EmployeesGetEmployeeRequest request) throws ApiBusinessException {

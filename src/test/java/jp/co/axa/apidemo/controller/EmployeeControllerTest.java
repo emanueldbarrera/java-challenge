@@ -63,7 +63,7 @@ class EmployeeControllerTest {
         final List<Employee> employees = new java.util.ArrayList<>();
         employees.add(employee1);
         employees.add(employee2);
-        when(employeeService.getEmployees()).thenReturn(employees);
+        when(employeeService.getEmployees(any(ApiV1EmployeesGetEmployeesRequest.class))).thenReturn(employees);
         when(employeeService.saveEmployee(any(ApiV1EmployeesSaveEmployeeRequest.class)))
                 .thenReturn(employee1);
         when(employeeService.deleteEmployee((any(ApiV1EmployeesDeleteEmployeeRequest.class))))
@@ -82,7 +82,7 @@ class EmployeeControllerTest {
      */
     @Test
     void test_getEmployees_success() {
-        final ApiV1EmployeesGetEmployeesResponse response = employeeController.getEmployees();
+        final ApiV1EmployeesGetEmployeesResponse response = employeeController.getEmployees(0, 10);
 
         assertThat(response.getResultType(), is(ResultType.SUCCESS.getCode()));
         assertThat(response.getErrorCode(), is(nullValue()));
@@ -104,9 +104,9 @@ class EmployeeControllerTest {
      */
     @Test
     void test_getEmployees_success_empty_db() {
-        when(employeeService.getEmployees()).thenReturn(new ArrayList<>());
+        when(employeeService.getEmployees(any(ApiV1EmployeesGetEmployeesRequest.class))).thenReturn(new ArrayList<>());
 
-        final ApiV1EmployeesGetEmployeesResponse response = employeeController.getEmployees();
+        final ApiV1EmployeesGetEmployeesResponse response = employeeController.getEmployees(0, 10);
 
         assertThat(response.getResultType(), is(ResultType.SUCCESS.getCode()));
         assertThat(response.getErrorCode(), is(nullValue()));
@@ -115,13 +115,56 @@ class EmployeeControllerTest {
     }
 
     /**
-     * getEmployees - Success case - service throws general exception
+     * getEmployees - Failure case - invalid offset
      */
     @Test
-    void test_getEmployees_success_RuntimeException() {
-        doThrow(RuntimeException.class).when(employeeService).getEmployees();
+    void test_getEmployees_failure_invalid_offset() {
+        doThrow(RuntimeException.class).when(employeeService).getEmployees(any(ApiV1EmployeesGetEmployeesRequest.class));
 
-        final ApiV1EmployeesGetEmployeesResponse response = employeeController.getEmployees();
+        final ApiV1EmployeesGetEmployeesResponse response = employeeController.getEmployees(-1, 10);
+
+        assertThat(response.getResultType(), is(ResultType.FAILURE.getCode()));
+        assertThat(response.getErrorCode(), is(ErrorCode.INVALID_REQUEST_PARAMETER.getCode()));
+        assertThat(response.getErrorMessage(), is("Invalid request parameter"));
+        assertThat(response.getEmployees(), is(nullValue()));
+    }
+
+    /**
+     * getEmployees - Failure case - invalid limit
+     */
+    @Test
+    void test_getEmployees_failure_invalid_limit() {
+        doThrow(RuntimeException.class).when(employeeService).getEmployees(any(ApiV1EmployeesGetEmployeesRequest.class));
+
+        final ApiV1EmployeesGetEmployeesResponse response = employeeController.getEmployees(0, 0);
+
+        assertThat(response.getResultType(), is(ResultType.FAILURE.getCode()));
+        assertThat(response.getErrorCode(), is(ErrorCode.INVALID_REQUEST_PARAMETER.getCode()));
+        assertThat(response.getErrorMessage(), is("Invalid request parameter"));
+        assertThat(response.getEmployees(), is(nullValue()));
+    }
+
+    /**
+     * getEmployees - Failure case - null limit, null offset
+     */
+    @Test
+    void test_getEmployees_success_null_limit_null_offset() {
+        final ApiV1EmployeesGetEmployeesResponse response = employeeController.getEmployees(null, null);
+
+        assertThat(response.getResultType(), is(ResultType.FAILURE.getCode()));
+        assertThat(response.getErrorCode(), is(ErrorCode.INVALID_REQUEST_PARAMETER.getCode()));
+        assertThat(response.getErrorMessage(), is("Invalid request parameter"));
+        assertThat(response.getEmployees(), is(nullValue()));
+    }
+
+    /**
+     * getEmployees - Failure case - service throws general exception
+     */
+    @Test
+    void test_getEmployees_failure_RuntimeException() {
+        doThrow(RuntimeException.class).when(employeeService).getEmployees(any(ApiV1EmployeesGetEmployeesRequest.class));
+
+        final ApiV1EmployeesGetEmployeesResponse response = employeeController.getEmployees(0, 10);
 
         assertThat(response.getResultType(), is(ResultType.FAILURE.getCode()));
         assertThat(response.getErrorCode(), is(ErrorCode.UNKNOWN.getCode()));

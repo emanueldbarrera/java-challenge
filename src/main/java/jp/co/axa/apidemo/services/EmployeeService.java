@@ -4,6 +4,7 @@ import jp.co.axa.apidemo.common.ApiBusinessException;
 import jp.co.axa.apidemo.entities.Employee;
 import jp.co.axa.apidemo.models.ApiV1EmployeesDeleteEmployeeRequest;
 import jp.co.axa.apidemo.models.ApiV1EmployeesGetEmployeeRequest;
+import jp.co.axa.apidemo.models.ApiV1EmployeesGetEmployeesRequest;
 import jp.co.axa.apidemo.models.ApiV1EmployeesSaveEmployeeRequest;
 import jp.co.axa.apidemo.models.ApiV1EmployeesUpdateEmployeeRequest;
 
@@ -11,7 +12,7 @@ import java.util.List;
 
 public interface EmployeeService {
 
-    List<Employee> getEmployees();
+    List<Employee> getEmployees(ApiV1EmployeesGetEmployeesRequest request);
 
     Employee getEmployee(ApiV1EmployeesGetEmployeeRequest request) throws ApiBusinessException;
 

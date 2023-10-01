@@ -10,6 +10,7 @@
 - Added DTO objects for requests and responses
 - Added parameters validations
 - Added custom exceptions
+- Add pagination for GetEmployees
 
 - Included sonarqube for code analysis
 - Included a code coverage plugin for reports (jacoco)
@@ -24,7 +25,6 @@
 - Add cache for the database
 - Include versioning
 - Include support for environments
-- Add pagination
 - Salary should accept decimal
 
 #### My experience in Java

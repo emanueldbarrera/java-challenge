@@ -7,6 +7,7 @@ import jp.co.axa.apidemo.models.ApiV1EmployeesDeleteEmployeeRequest;
 import jp.co.axa.apidemo.models.ApiV1EmployeesDeleteEmployeeResponse;
 import jp.co.axa.apidemo.models.ApiV1EmployeesGetEmployeeRequest;
 import jp.co.axa.apidemo.models.ApiV1EmployeesGetEmployeeResponse;
+import jp.co.axa.apidemo.models.ApiV1EmployeesGetEmployeesRequest;
 import jp.co.axa.apidemo.models.ApiV1EmployeesGetEmployeesResponse;
 import jp.co.axa.apidemo.models.ApiV1EmployeesSaveEmployeeRequest;
 import jp.co.axa.apidemo.models.ApiV1EmployeesSaveEmployeeResponse;
@@ -28,6 +29,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.ConstraintViolationException;
@@ -42,9 +44,19 @@ public class EmployeeController {
     private EmployeeService employeeService;
 
     @GetMapping("/employees")
-    public ApiV1EmployeesGetEmployeesResponse getEmployees() {
+    public ApiV1EmployeesGetEmployeesResponse getEmployees(
+            @RequestParam Integer offset,
+            @RequestParam Integer limit) {
         try {
-            return ApiV1EmployeesGetEmployeesResponseUtil.buildResponseSuccess(employeeService.getEmployees());
+            final ApiV1EmployeesGetEmployeesRequest request = ApiV1EmployeesGetEmployeesRequest.builder()
+                    .limit(limit)
+                    .offset(offset)
+                    .build();
+            request.validate();
+            return ApiV1EmployeesGetEmployeesResponseUtil.buildResponseSuccess(employeeService.getEmployees(request));
+        } catch (ConstraintViolationException e) {
+            log.info("Validation error: " + e.getMessage());
+            return ApiV1EmployeesGetEmployeesResponseUtil.buildResponseFailure(ErrorCode.INVALID_REQUEST_PARAMETER, "Invalid request parameter");
         } catch (Exception e) {
             log.warn("Unknown exception: " + e.getMessage());
             return ApiV1EmployeesGetEmployeesResponseUtil.buildResponseFailure(ErrorCode.UNKNOWN, "Unknown error");

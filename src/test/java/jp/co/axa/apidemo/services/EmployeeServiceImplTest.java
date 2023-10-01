@@ -6,6 +6,7 @@ import jp.co.axa.apidemo.entities.Department;
 import jp.co.axa.apidemo.entities.Employee;
 import jp.co.axa.apidemo.models.ApiV1EmployeesDeleteEmployeeRequest;
 import jp.co.axa.apidemo.models.ApiV1EmployeesGetEmployeeRequest;
+import jp.co.axa.apidemo.models.ApiV1EmployeesGetEmployeesRequest;
 import jp.co.axa.apidemo.models.ApiV1EmployeesSaveEmployeeRequest;
 import jp.co.axa.apidemo.models.ApiV1EmployeesUpdateEmployeeRequest;
 import jp.co.axa.apidemo.repositories.DepartmentRepository;
@@ -14,8 +15,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,7 +27,10 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 
@@ -68,7 +74,7 @@ class EmployeeServiceImplTest {
         List<Employee> employees = new java.util.ArrayList<>();
         employees.add(employee1);
         employees.add(employee2);
-        when(employeeRepository.findAll()).thenReturn(employees);
+        when(employeeRepository.findAll(any(PageRequest.class))).thenReturn(new PageImpl<>(employees));
 
         when(employeeRepository.findById(any(Long.class))).thenReturn(Optional.empty());
         when(employeeRepository.findById(1L)).thenReturn(Optional.of(employee1));
@@ -86,7 +92,11 @@ class EmployeeServiceImplTest {
      */
     @Test
     void test_getEmployees_success() {
-        final List<Employee> employees = employeeService.getEmployees();
+        ApiV1EmployeesGetEmployeesRequest request = ApiV1EmployeesGetEmployeesRequest.builder()
+                .offset(0)
+                .limit(10)
+                .build();
+        final List<Employee> employees = employeeService.getEmployees(request);
 
         assertThat(employees.size(), is(2));
         assertThat(employees.get(0).getId(), is(1L));
@@ -105,9 +115,13 @@ class EmployeeServiceImplTest {
      */
     @Test
     void test_getEmployees_success_empty_db() {
-        when(employeeRepository.findAll()).thenReturn(new ArrayList<>());
+        when(employeeRepository.findAll(any(PageRequest.class))).thenReturn(Page.empty());
 
-        final List<Employee> employees = employeeService.getEmployees();
+        ApiV1EmployeesGetEmployeesRequest request = ApiV1EmployeesGetEmployeesRequest.builder()
+                .offset(0)
+                .limit(10)
+                .build();
+        final List<Employee> employees = employeeService.getEmployees(request);
 
         assertThat(employees.size(), is(0));
     }
