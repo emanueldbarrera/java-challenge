@@ -106,9 +106,9 @@ public class EmployeeServiceImpl implements EmployeeService {
         // Update Employee entity
         final Employee employee = optionalEmployee.get();
         try {
-            employee.setName(request.getName());
+            employee.setName(request.getName() != null ? request.getName() : employee.getName());
             employee.setDepartment(department);
-            employee.setSalary(request.getSalary());
+            employee.setSalary(request.getSalary() != null ? request.getSalary() : employee.getSalary());
             employeeRepository.saveAndFlush(employee);
         } catch (Exception e) {
             throw new ApiBusinessException("0-0-9", ErrorCode.SYSTEM_ERROR, "Database error");

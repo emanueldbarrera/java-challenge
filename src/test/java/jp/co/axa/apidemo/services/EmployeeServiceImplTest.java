@@ -283,8 +283,69 @@ class EmployeeServiceImplTest {
                 .salary(4500)
                 .build();
 
-        employeeService.updateEmployee(request);
+        final Employee employee = employeeService.updateEmployee(request);
 
+        assertThat(employee.getId(), is(1L));
+        assertThat(employee.getName(), is("Different Name"));
+        assertThat(employee.getDepartment().getId(), is(2L));
+        assertThat(employee.getSalary(), is(4500));
+        verify(employeeRepository, times(1)).saveAndFlush(any(Employee.class));
+    }
+
+    /**
+     * updateEmployee - Success case - only update name
+     */
+    @Test
+    void test_updateEmployee_success_update_name() throws ApiBusinessException {
+        final ApiV1EmployeesUpdateEmployeeRequest request = ApiV1EmployeesUpdateEmployeeRequest.builder()
+                .employeeId(1L)
+                .name("Different Name")
+                .build();
+
+        final Employee employee = employeeService.updateEmployee(request);
+
+        assertThat(employee.getId(), is(1L));
+        assertThat(employee.getName(), is("Different Name"));
+        assertThat(employee.getDepartment().getId(), is(1L));
+        assertThat(employee.getSalary(), is(3000));
+        verify(employeeRepository, times(1)).saveAndFlush(any(Employee.class));
+    }
+
+    /**
+     * updateEmployee - Success case - only update department
+     */
+    @Test
+    void test_updateEmployee_success_update_department() throws ApiBusinessException {
+        final ApiV1EmployeesUpdateEmployeeRequest request = ApiV1EmployeesUpdateEmployeeRequest.builder()
+                .employeeId(1L)
+                .departmentId(2L)
+                .build();
+
+        final Employee employee = employeeService.updateEmployee(request);
+
+        assertThat(employee.getId(), is(1L));
+        assertThat(employee.getName(), is("Some Name"));
+        assertThat(employee.getDepartment().getId(), is(2L));
+        assertThat(employee.getSalary(), is(3000));
+        verify(employeeRepository, times(1)).saveAndFlush(any(Employee.class));
+    }
+
+    /**
+     * updateEmployee - Success case - only update salary
+     */
+    @Test
+    void test_updateEmployee_success_update_salary() throws ApiBusinessException {
+        final ApiV1EmployeesUpdateEmployeeRequest request = ApiV1EmployeesUpdateEmployeeRequest.builder()
+                .employeeId(1L)
+                .salary(4500)
+                .build();
+
+        final Employee employee = employeeService.updateEmployee(request);
+
+        assertThat(employee.getId(), is(1L));
+        assertThat(employee.getName(), is("Some Name"));
+        assertThat(employee.getDepartment().getId(), is(1L));
+        assertThat(employee.getSalary(), is(4500));
         verify(employeeRepository, times(1)).saveAndFlush(any(Employee.class));
     }
 
