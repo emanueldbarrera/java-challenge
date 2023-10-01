@@ -6,6 +6,7 @@
 - Fixed some bugs I found during manual testing
 - Added unit tests with junit5, so that I could code using TDD
 
+- Parameterized Departments as an entity
 - Added DTO objects for requests and responses
 - Added parameters validations
 - Added custom exceptions
@@ -24,7 +25,6 @@
 - Include versioning
 - Include support for environments
 - Add pagination
-- Parameterize Departments
 - Salary should accept decimal
 
 #### My experience in Java
