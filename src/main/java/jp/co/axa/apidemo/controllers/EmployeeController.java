@@ -83,10 +83,10 @@ public class EmployeeController {
             return ApiV1EmployeesGetEmployeeResponseUtil.buildResponseFailure(ErrorCode.INVALID_REQUEST_PARAMETER, "Invalid request parameter");
         } catch (ApiBusinessException e) {
             if (e.getErrorCode().equals(ErrorCode.NOT_FOUND)) {
-                log.info(e.getPlaceCode(), "Employee not found; id: " + employeeId);
+                log.info("placeCode: " + e.getPlaceCode() + " Employee not found; id: " + employeeId);
                 return ApiV1EmployeesGetEmployeeResponseUtil.buildResponseFailure(e.getErrorCode(), "Employee not found");
             } else {
-                log.warn(e.getPlaceCode(), "System error");
+                log.warn("placeCode: " + e.getPlaceCode() + " System error");
                 return ApiV1EmployeesGetEmployeeResponseUtil.buildResponseFailure(e.getErrorCode(), "System error");
             }
         } catch (Exception e) {
@@ -113,10 +113,10 @@ public class EmployeeController {
             return ApiV1EmployeesSaveEmployeeResponseUtil.buildResponseFailure(ErrorCode.INVALID_REQUEST_PARAMETER, "Invalid request parameter");
         } catch (ApiBusinessException e) {
             if (e.getErrorCode().equals(ErrorCode.INVALID_REQUEST_PARAMETER)) {
-                log.info(e.getPlaceCode(), "Validation error: " + e.getMessage());
+                log.info("placeCode: " + e.getPlaceCode() + " Validation error: " + e.getMessage());
                 return ApiV1EmployeesSaveEmployeeResponseUtil.buildResponseFailure(ErrorCode.INVALID_REQUEST_PARAMETER, "Invalid request parameter");
             }
-            log.warn(e.getPlaceCode(), "System error", e.getMessage());
+            log.warn("placeCode: " + e.getPlaceCode() + " System error", e.getMessage());
             return ApiV1EmployeesSaveEmployeeResponseUtil.buildResponseFailure(ErrorCode.SYSTEM_ERROR, "System error");
         } catch (Exception e) {
             log.warn("Unknown exception: " + e.getMessage());
@@ -143,10 +143,10 @@ public class EmployeeController {
             return ApiV1EmployeesDeleteEmployeeResponseUtil.buildResponseFailure(ErrorCode.INVALID_REQUEST_PARAMETER, "Invalid request parameter");
         } catch (ApiBusinessException e) {
             if (e.getErrorCode().equals(ErrorCode.NOT_FOUND)) {
-                log.info(e.getPlaceCode(), "Employee not found; id: " + employeeId);
+                log.info("placeCode: " + e.getPlaceCode() + " Employee not found; id: " + employeeId);
                 return ApiV1EmployeesDeleteEmployeeResponseUtil.buildResponseFailure(e.getErrorCode(), "Employee not found");
             } else {
-                log.warn(e.getPlaceCode(), "System error", e.getMessage());
+                log.warn("placeCode: " + e.getPlaceCode() + " System error", e.getMessage());
                 return ApiV1EmployeesDeleteEmployeeResponseUtil.buildResponseFailure(ErrorCode.SYSTEM_ERROR, "System error");
             }
         } catch (Exception e) {
@@ -176,14 +176,14 @@ public class EmployeeController {
             return ApiV1EmployeesUpdateEmployeeResponseUtil.buildResponseFailure(ErrorCode.INVALID_REQUEST_PARAMETER, "Invalid request parameter");
         } catch (ApiBusinessException e) {
             if (e.getErrorCode().equals(ErrorCode.INVALID_REQUEST_PARAMETER)) {
-                log.info(e.getPlaceCode(), "Validation error: " + e.getMessage());
+                log.info("placeCode: " + e.getPlaceCode() + " Validation error: " + e.getMessage());
                 return ApiV1EmployeesUpdateEmployeeResponseUtil.buildResponseFailure(ErrorCode.INVALID_REQUEST_PARAMETER, "Invalid request parameter");
             }
             if (e.getErrorCode().equals(ErrorCode.NOT_FOUND)) {
-                log.info(e.getPlaceCode(), "Employee not found; id: " + employeeId);
+                log.info("placeCode: " + e.getPlaceCode() + " Employee not found; id: " + employeeId);
                 return ApiV1EmployeesUpdateEmployeeResponseUtil.buildResponseFailure(e.getErrorCode(), "Employee not found");
             } else {
-                log.warn(e.getPlaceCode(), "System error", e.getMessage());
+                log.warn("placeCode: " + e.getPlaceCode() + " System error", e.getMessage());
                 return ApiV1EmployeesUpdateEmployeeResponseUtil.buildResponseFailure(ErrorCode.SYSTEM_ERROR, "System error");
             }
         } catch (Exception e) {

@@ -85,10 +85,10 @@ public class DepartmentController {
             return ApiV1DepartmentsGetDepartmentResponseUtil.buildResponseFailure(ErrorCode.INVALID_REQUEST_PARAMETER, "Invalid request parameter");
         } catch (ApiBusinessException e) {
             if (e.getErrorCode().equals(ErrorCode.NOT_FOUND)) {
-                log.info(e.getPlaceCode(), "Department not found; id: " + departmentId);
+                log.info("placeCode: " + e.getPlaceCode() + " Department not found; id: " + departmentId);
                 return ApiV1DepartmentsGetDepartmentResponseUtil.buildResponseFailure(e.getErrorCode(), "Department not found");
             } else {
-                log.warn(e.getPlaceCode(), "System error");
+                log.warn("placeCode: " + e.getPlaceCode() + " System error");
                 return ApiV1DepartmentsGetDepartmentResponseUtil.buildResponseFailure(e.getErrorCode(), "System error");
             }
         } catch (Exception e) {
@@ -114,7 +114,7 @@ public class DepartmentController {
             log.info("Validation error: " + e.getMessage());
             return ApiV1DepartmentsSaveDepartmentResponseUtil.buildResponseFailure(ErrorCode.INVALID_REQUEST_PARAMETER, "Invalid request parameter");
         } catch (ApiBusinessException e) {
-            log.warn(e.getPlaceCode(), "System error", e.getMessage());
+            log.warn("placeCode: " + e.getPlaceCode() + " System error", e.getMessage());
             return ApiV1DepartmentsSaveDepartmentResponseUtil.buildResponseFailure(ErrorCode.SYSTEM_ERROR, "System error");
         } catch (Exception e) {
             log.warn("Unknown exception: " + e.getMessage());
@@ -141,10 +141,10 @@ public class DepartmentController {
             return ApiV1DepartmentsDeleteDepartmentResponseUtil.buildResponseFailure(ErrorCode.INVALID_REQUEST_PARAMETER, "Invalid request parameter");
         } catch (ApiBusinessException e) {
             if (e.getErrorCode().equals(ErrorCode.NOT_FOUND)) {
-                log.info(e.getPlaceCode(), "Department not found; id: " + departmentId);
+                log.info("placeCode: " + e.getPlaceCode() + " Department not found; id: " + departmentId);
                 return ApiV1DepartmentsDeleteDepartmentResponseUtil.buildResponseFailure(e.getErrorCode(), "Department not found");
             } else {
-                log.warn(e.getPlaceCode(), "System error", e.getMessage());
+                log.warn("placeCode: " + e.getPlaceCode() + " System error", e.getMessage());
                 return ApiV1DepartmentsDeleteDepartmentResponseUtil.buildResponseFailure(ErrorCode.SYSTEM_ERROR, "System error");
             }
         } catch (Exception e) {
@@ -175,14 +175,14 @@ public class DepartmentController {
             return ApiV1DepartmentsUpdateDepartmentResponseUtil.buildResponseFailure(ErrorCode.INVALID_REQUEST_PARAMETER, "Invalid request parameter");
         } catch (ApiBusinessException e) {
             if (e.getErrorCode().equals(ErrorCode.INVALID_REQUEST_PARAMETER)) {
-                log.info(e.getPlaceCode(), "Validation error: " + e.getMessage());
+                log.info("placeCode: " + e.getPlaceCode() + " Validation error: " + e.getMessage());
                 return ApiV1DepartmentsUpdateDepartmentResponseUtil.buildResponseFailure(ErrorCode.INVALID_REQUEST_PARAMETER, "Invalid request parameter");
             }
             if (e.getErrorCode().equals(ErrorCode.NOT_FOUND)) {
-                log.info(e.getPlaceCode(), "Department not found; id: " + departmentId);
+                log.info("placeCode: " + e.getPlaceCode() + " Department not found; id: " + departmentId);
                 return ApiV1DepartmentsUpdateDepartmentResponseUtil.buildResponseFailure(e.getErrorCode(), "Department not found");
             } else {
-                log.warn(e.getPlaceCode(), "System error", e.getMessage());
+                log.warn("placeCode: " + e.getPlaceCode() + " System error", e.getMessage());
                 return ApiV1DepartmentsUpdateDepartmentResponseUtil.buildResponseFailure(ErrorCode.SYSTEM_ERROR, "System error");
             }
         } catch (Exception e) {
